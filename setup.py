@@ -11,5 +11,6 @@ setup(
     url='https://github.com/dvc94ch/pykicad',
     keywords=['kicad', 'file formats', 'parser'],
     install_requires=['pyparsing'],
+    tests_require=['pytest'],
     license='ISC'
 )
