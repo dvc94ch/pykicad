@@ -162,6 +162,10 @@ class Text(AST):
                 },
                 '_optional': True
             },
+            'justify': {
+                '_parser': text,
+                '_optional': True
+            },
             '_optional': True
         },
         'hide': {
@@ -173,10 +177,11 @@ class Text(AST):
     }
 
     def __init__(self, prop, value, at, layer, hide=False, size=None,
-                 thickness=None):
+                 thickness=None, justify=None):
 
         super().__init__(prop=prop, value=value, at=at, layer=layer,
-                         hide=hide, size=size, thickness=thickness)
+                         hide=hide, size=size, thickness=thickness,
+                         justify=justify)
 
 
 class Line(AST):

@@ -71,6 +71,11 @@ class TextTests(unittest.TestCase):
         assert text.thickness == 0.2
         assert Text.parse(text.to_string()) == text
 
+    def test_text_with_justify(self):
+        text = Text.parse('(fp_text prop value (at 0.0 0.0) (layer layer) '
+                          '(effects (justify mirror)))')
+        assert text.justify == 'mirror'
+        assert Text.parse(text.to_string()) == text
 
 class ModuleTests(unittest.TestCase):
     def test_module(self):
