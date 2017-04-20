@@ -46,9 +46,23 @@ def list_all_modules():
     return modules
 
 
-
-
 ### AST
+class Net(AST):
+    tag = 'net'
+    schema = {
+        '0': {
+            '_attr': 'code',
+            '_parser': integer
+        },
+        '1': {
+            '_attr': 'name',
+            '_parser': text
+        }
+    }
+
+    def __init__(self, code, name):
+        super().__init__(code=code, name=name)
+
 class Drill(AST):
     tag = 'drill'
     schema = {
@@ -117,17 +131,23 @@ class Pad(AST):
         'zone_connect': {
             '_parser': number,
             '_optional': True
+        },
+        'net': {
+            '_parser': Net,
+            '_printer': Net.to_string,
+            '_optional': True
         }
     }
 
     def __init__(self, name, type, shape, at, size, layers,
                  drill=None, rect_delta=None, clearance=None,
                  zone_connect=None, solder_mask_margin=None,
-                 solder_paste_margin=None, solder_paste_margin_ratio=None):
+                 solder_paste_margin=None, solder_paste_margin_ratio=None,
+                 net=None):
 
         super().__init__(name=name, type=type, shape=shape, at=at, size=size,
                          layers=layers, drill=drill, rect_delta=rect_delta,
-                         clearance=clearance,
+                         clearance=clearance, net=net,
                          zone_connect=zone_connect,
                          solder_mask_margin=solder_mask_margin,
                          solder_paste_margin=solder_paste_margin,
