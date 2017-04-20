@@ -22,18 +22,18 @@ def parse_action(tokens):
     return list(tokens)
 
 
-def leaf_parse_action(name):
+def leaf_parse_action(attr):
     def action(tokens):
-        return {name: parse_action(tokens[0])}
+        return {attr: parse_action(tokens[0])}
 
     return action
 
 
-def ast_parse_action(name, ast):
+def ast_parse_action(attr, ast):
     def action(tokens=None):
         if tokens is None:
             return
-        return {name: ast(**parse_action(tokens[0]))}
+        return {attr: ast(**parse_action(tokens[0]))}
 
     return action
 
@@ -58,40 +58,35 @@ def sexpr(name, positional=None, children=None):
     return Suppress('(') + Suppress(name) + parser + Suppress(')')
 
 
-def generate_parser(name, schema):
-    def leaf(parser, name):
-        return Group(parser).setParseAction(leaf_parse_action(name))
+def generate_parser(tag, schema, attr=None):
+    def leaf(parser, attr):
+        return Group(parser).setParseAction(leaf_parse_action(attr))
 
-    def ast(ast, name):
-        return Group(ast.parser()).setParseAction(ast_parse_action(name, ast))
-
-    def node(parser):
-        return Group(parser).setParseAction(parse_action)
+    def ast(ast, attr):
+        return Group(ast.parser()).setParseAction(ast_parse_action(attr, ast))
 
     if isinstance(schema, ParserElement):
-        return leaf(sexpr(name, schema), name)
+        parser = schema
+        if isinstance(tag, str):
+            parser = sexpr(tag, parser)
+        if attr is None:
+            attr = tag
+        assert isinstance(attr, str)
+        return leaf(parser, attr)
+
+    if type(schema) == type and issubclass(schema, AST):
+        return ast(schema, attr)
+
 
     if '_parser' in schema:
         parser = schema['_parser']
-        if isinstance(parser, ParserElement):
-            if schema.get('_tag', True):
-                parser = leaf(sexpr(name, parser), name)
-        elif issubclass(parser, AST):
-            parser = ast(parser, name)
+        tag = schema.get('_tag', tag)
+        attr = schema.get('_attr', tag)
+        parser = generate_parser(tag, parser, attr)
     else:
         i, positional = 0, []
         while str(i) in schema:
-            subschema = schema[str(i)]
-            _parser = subschema['_parser']
-            _tag = subschema.get('_tag', False)
-            _attr = subschema.get('_attr', _tag)
-            assert isinstance(_attr, str)
-
-            if _tag:
-                _parser = sexpr(_tag, _parser)
-            _parser = leaf(_parser, _attr)
-
-            positional.append(_parser)
+            positional.append(generate_parser(False, schema[str(i)]))
             i += 1
 
         children = []
@@ -99,7 +94,7 @@ def generate_parser(name, schema):
             if not (key.isdigit() or key[0] == '_'):
                 children.append(generate_parser(key, value))
 
-        parser = sexpr(name, positional, children)
+        parser = sexpr(tag, positional, children)
 
     if schema.get('_multiple', False):
         parser = ZeroOrMore(parser)
@@ -110,24 +105,28 @@ def generate_parser(name, schema):
 
 
 def find_attr(attr, value, schema):
+    def printer(printer, value, multiple):
+        if multiple and isinstance(value, list):
+            return ' '.join(map(printer, value))
+        return printer(value)
+
     if not isinstance(schema, dict):
         return None
 
     if schema.get('_attr', schema.get('_tag', False)) == attr:
         if '_printer' in schema:
-            value = ('_', schema['_printer'](value))
+            value = ('_', printer(schema['_printer'], value,
+                                  schema.get('_multiple', False)))
+
         if schema.get('_tag', False):
             return {schema['_tag']: value}
         return value
 
     if attr in schema:
         if isinstance(schema[attr], dict) and '_printer' in schema[attr]:
-            printer = schema[attr]['_printer']
+            value = printer(schema[attr]['_printer'], value,
+                            schema[attr].get('_multiple', False))
             attr = '_' + attr
-            if isinstance(value, list):
-                value = ' '.join(map(printer, value))
-            else:
-                value = printer(value)
 
         return {attr: value}
 

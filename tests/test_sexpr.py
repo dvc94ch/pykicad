@@ -171,3 +171,28 @@ class ASTTests(unittest.TestCase):
         ast = AST.parse('(sexpr (sexpr2 1))')
         assert ast.attr == 1.0
         assert AST.parse(ast.to_string()) == ast
+
+    def test_positional_ast(self):
+        AST.from_schema('sexpr', {
+            '0': {
+                '_attr': 'drill',
+                '_parser': Drill,
+                '_printer': Drill.to_string
+            }
+        })
+        ast = AST.parse('(sexpr (drill 0.8))')
+        assert ast.drill.size == 0.8
+        assert AST.parse(ast.to_string()) == ast
+
+    def test_positional_multiple_ast(self):
+        AST.from_schema('sexpr', {
+            '0': {
+                '_attr': 'drills',
+                '_parser': Drill,
+                '_printer': Drill.to_string,
+                '_multiple': True
+            }
+        })
+        ast = AST.parse('(sexpr (drill 0.6) (drill 0.8))')
+        assert len(ast.drills) == 2
+        assert AST.parse(ast.to_string()) == ast

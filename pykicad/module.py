@@ -186,10 +186,11 @@ class Text(AST):
             '_optional': True
         },
         'hide': {
-            '_parser': Literal('hide').setParseAction(lambda: {'hide': True}),
+            '_parser': Literal('hide').setParseAction(lambda x: True),
             '_printer': lambda hide: 'hide' if hide else '',
             '_optional': True,
-            '_tag': False
+            '_tag': False,
+            '_attr': 'hide'
         }
     }
 
