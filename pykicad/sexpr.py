@@ -199,6 +199,12 @@ class AST(object):
         except KeyError as e:
             raise AttributeError(e)
 
+    def __setattr__(self, attr, value):
+        if not attr == 'attributes' and attr in self.attributes:
+            self.attributes[attr] = value
+        else:
+            super().__setattr__(attr, value)
+
     def __eq__(self, other):
         return self.attributes == other.attributes
 
