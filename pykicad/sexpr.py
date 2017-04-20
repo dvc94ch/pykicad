@@ -80,9 +80,16 @@ def generate_parser(name, schema):
     else:
         i, positional = 0, []
         while str(i) in schema:
-            _parser = schema[str(i)]['_parser']
-            _attr = schema[str(i)]['_attr']
+            subschema = schema[str(i)]
+            _parser = subschema['_parser']
+            _tag = subschema.get('_tag', False)
+            _attr = subschema.get('_attr', _tag)
+            assert isinstance(_attr, str)
+
+            if _tag:
+                _parser = sexpr(_tag, _parser)
             _parser = leaf(_parser, _attr)
+
             positional.append(_parser)
             i += 1
 
@@ -105,9 +112,11 @@ def find_attr(attr, value, schema):
     if not isinstance(schema, dict):
         return None
 
-    if '_attr' in schema and schema['_attr'] == attr:
+    if schema.get('_attr', schema.get('_tag', False)) == attr:
         if '_printer' in schema:
             value = ('_', schema['_printer'](value))
+        if schema.get('_tag', False):
+            return {schema['_tag']: value}
         return value
 
     if attr in schema:
@@ -144,6 +153,8 @@ def tree_to_string(tree, level=0):
         return b
     if isinstance(tree, float):
         return '%f' % tree
+    if isinstance(tree, int):
+        return str(tree)
     if isinstance(tree, list):
         return ' '.join(map(tree_to_string, tree))
     if issubclass(type(tree), AST):
@@ -151,16 +162,16 @@ def tree_to_string(tree, level=0):
 
     i, pos = 0, []
     while str(i) in tree:
-        pos.append(tree_to_string(tree[str(i)]))
+        pos.append(tree_to_string(tree[str(i)], level))
         i += 1
 
     children = []
     for key, value in tree.items():
         if key[0] == '_':
-            children.append('\n'.join(map(lambda x: level * '    ' + x,
-                                          value.split('\n'))))
+            children.append(value)
         elif not key.isdigit():
-            children.append('\n%s(%s %s)' % (level * '    ', key, tree_to_string(value, level + 1)))
+            children.append('\n%s(%s %s)' % (level * '    ', key,
+                                             tree_to_string(value, level + 1)))
 
     return ' '.join(pos + children)
 
@@ -197,6 +208,9 @@ class AST(object):
             if value is not None:
                 attrs[key] = value
         return '(%s %s)' % (self.tag, repr(attrs))
+
+    def __str__(self):
+        return self.to_string()[1:] + '\n'
 
     def to_string(self, attributes=None):
         if attributes is None:

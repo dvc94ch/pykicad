@@ -77,6 +77,16 @@ class TextTests(unittest.TestCase):
         assert text.justify == 'mirror'
         assert Text.parse(text.to_string()) == text
 
+
+class LineTests(unittest.TestCase):
+    def test_line(self):
+        line = Line.parse('(fp_line (start 0 0) (end 1 1) (layer layer))')
+        assert line.start == [0.0, 0.0]
+        assert line.end == [1.0, 1.0]
+        assert line.layer == 'layer'
+        assert Line.parse(line.to_string()) == line
+
+
 class ModuleTests(unittest.TestCase):
     def test_module(self):
         module_string = '(module name (layer layer) %s)'

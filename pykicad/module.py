@@ -187,8 +187,14 @@ class Text(AST):
 class Line(AST):
     tag = 'fp_line'
     schema = {
-        'start': number + number,
-        'end': number + number,
+        '0': {
+            '_tag': 'start',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number
+        },
         'layer': text,
         'width': {
             '_parser': number,

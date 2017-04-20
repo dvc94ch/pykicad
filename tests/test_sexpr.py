@@ -1,5 +1,6 @@
 import unittest
 from pytest import *
+from pyparsing import ParseException
 from pykicad.sexpr import *
 from pykicad.module import Drill
 
@@ -138,4 +139,35 @@ class ASTTests(unittest.TestCase):
         assert ast.drills[0].size == 1.0
         assert ast.drills[1].size == 2.0
         assert ast.drills[2].size == 3.0
+        assert AST.parse(ast.to_string()) == ast
+
+    def test_positional_sexpr(self):
+        AST.from_schema('sexpr', {
+            '0': {
+                '_tag': 'start',
+                '_parser': number + number,
+            },
+            '1': {
+                '_tag': 'end',
+                '_parser': number + number
+            }
+        })
+        ast = AST.parse('(sexpr (start 1 1) (end 2 2))')
+        assert ast.start == [1.0, 1.0]
+        assert ast.end == [2.0, 2.0]
+        assert AST.parse(ast.to_string()) == ast
+
+        with raises(ParseException):
+            AST.parse('(sexpr (end 2 2) (start 1 1))')
+
+    def test_tag_and_attr_schema(self):
+        AST.from_schema('sexpr', {
+            '0': {
+                '_tag': 'sexpr2',
+                '_attr': 'attr',
+                '_parser': number
+            }
+        })
+        ast = AST.parse('(sexpr (sexpr2 1))')
+        assert ast.attr == 1.0
         assert AST.parse(ast.to_string()) == ast
