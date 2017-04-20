@@ -9,38 +9,61 @@ format support so that other projects can focus on the interesting
 stuff.
 
 
+## Usage
+```python
+from pykicad.pcb import *
+from pykicad.module import *
+
+vi, vo, gnd = Net(1, 'VI'), Net(2, 'VO'), Net(3, 'GND')
+
+r1 = Module.from_library('Resistors_SMD', 'R_0805')
+r2 = Module.from_library('Resistors_SMD', 'R_0805')
+
+r1.pads[0].net = vi
+r1.pads[1].net = vo
+r2.pads[0].net = vo
+r2.pads[1].net = gnd
+
+pcb = Pcb()
+pcb.modules += [r1, r2]
+pcb.nets += [vi, vo, gnd]
+
+with open('project.kicad_pcb', 'w+') as f:
+    f.write(str(pcb))
+```
+
+
 ## Supported file formats
 
 * Modules (*.pretty, *.kicad_mod) in module.py
+* Pcbnew (*.kicad_pcb) in pcb.py
 
-## Formats that are on the TODO list
-
-* Netlists (*.net)
-* Pcbnew (*.kicad_pcb)
-* Schematic symbols (*.lib)
 
 # API docs
 ## modules.py
 ### Classes
-Module(name, descr, tags, layer, pads, texts, lines, circles, arcs, model)
-Pad(name, type, shape, drill, at, size, rect_delta, layers)
-Drill(size, offset)
-Model(path, at, scale, rotate)
-Text(prop, value, at, layer, hide, size, thickness)
-Line(start, end, layer, width)
-Circle(center, end, layer, width)
-Arc(start, end, angle, layer, width)
+* Module(name, descr, tags, layer, pads, texts, lines, circles, arcs, model)
+* Pad(name, type, shape, drill, at, size, rect_delta, layers)
+* Drill(size, offset)
+* Net(code, name)
+* Model(path, at, scale, rotate)
+* Text(prop, value, at, layer, hide, size, thickness)
+* Line(start, end, layer, width)
+* Circle(center, end, layer, width)
+* Arc(start, end, angle, layer, width)
 
 ### Functions
-find_library(library)
-find_module(library, module)
-list_libraries()
-list_modules(library)
-list_all_modules()
-parse_module(path)
+* find_library(library)
+* find_module(library, module)
+* list_libraries()
+* list_modules(library)
+* list_all_modules()
 
 ### Global variables
-MODULE_SEARCH_PATH
+* MODULE_SEARCH_PATH
+
+# Project using pykicad
+* [pycircuit] (https://github.com/dvc94ch/pycircuit)
 
 # License
 ISC License
