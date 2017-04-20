@@ -4,21 +4,22 @@ from functools import reduce
 
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
 number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
+integer = Word(nums)
 
 dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
+integer.setParseAction(lambda tokens: int(tokens[0]))
 
 
 def parse_action(tokens):
     if len(tokens) < 2:
         return tokens[0]
-    if isinstance(tokens[0], float):
-        return list(tokens)
     if isinstance(tokens[0], dict):
         res = {}
         for token in tokens:
             res.update(token)
         return res
+    return list(tokens)
 
 
 def leaf_parse_action(name):
