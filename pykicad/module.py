@@ -310,6 +310,10 @@ class Module(AST):
             '_parser': text,
             '_optional': True
         },
+        'tstamp': {
+            '_parser': text,
+            '_optional': True
+        },
         'solder_mask_margin': {
             '_parser': number,
             '_optional': True
@@ -347,7 +351,7 @@ class Module(AST):
     }
 
     def __init__(self, name, layer, descr=None, tags=None, attr=None, at=None,
-                 tedit=None, solder_mask_margin=None, model=None,
+                 tedit=None, tstamp=None, solder_mask_margin=None, model=None,
                  pads=[], lines=[], texts=[], circles=[], arcs=[]):
 
         if not isinstance(pads, list):
