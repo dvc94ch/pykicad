@@ -46,9 +46,6 @@ def list_all_modules():
     return modules
 
 
-def parse_module(path):
-    module = open(path, 'r', encoding='utf-8').read()
-    return Module.parse(module)
 
 
 ### AST
@@ -348,3 +345,13 @@ class Module(AST):
                          solder_mask_margin=solder_mask_margin,
                          attr=attr, at=at, model=model, pads=pads, texts=texts,
                          lines=lines, circles=circles, arcs=arcs)
+
+
+    @classmethod
+    def from_file(cls, path):
+        module = open(path, 'r', encoding='utf-8').read()
+        return cls.parse(module)
+
+    @classmethod
+    def from_library(cls, lib, name):
+        return cls.from_file(find_module(lib, name))
