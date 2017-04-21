@@ -1,6 +1,8 @@
 import difflib
+import random
 from pykicad.pcb import *
 from pykicad.module import *
+from pykicad.sexpr import *
 
 
 class PcbnewException(Exception):
@@ -10,6 +12,12 @@ class PcbnewException(Exception):
 def debug_print(text):
     for i, line in enumerate(text.split('\n')):
         sys.stdout.buffer.write(("%4d: %s\n" % (i + 1, line)).encode('utf-8'))
+
+
+def randomize_attribute_order(self):
+    return AST.to_string(self, sorted(self.attributes.items(),
+                                      key=lambda x: random.random()))
+Module.to_string = randomize_attribute_order
 
 
 def test_parse_module(module_path):
@@ -90,14 +98,14 @@ def regression_test(libs, debug=False, blacklist=[]):
 if __name__ == '__main__':
     #module_path = find_module('Resistors_SMD', 'R_0805')
 
-    blacklist = [('Crystals', 'HC-18UV'),
-                 ('Converters_DCDC_ACDC', 'DCDC-Conv_Infineon_IR3898')]
+    #blacklist = [('Crystals', 'HC-18UV'),
+    #             ('Converters_DCDC_ACDC', 'DCDC-Conv_Infineon_IR3898')]
 
-    test_libraries = ['Converters_DCDC_ACDC', 'LEDs']
+    # test_libraries = ['Converters_DCDC_ACDC', 'LEDs']
 
-    # regression_test(list_libraries(), blacklist=blacklist)
+    regression_test(list_libraries())
 
-    try:
-        regression_test(test_libraries, debug=True, blacklist=blacklist)
-    except PcbnewException:
-        os.system('pcbnew test.kicad_pcb')
+    # try:
+    #    regression_test(test_libraries, debug=True, blacklist=blacklist)
+    # except PcbnewException:
+    #    os.system('pcbnew test.kicad_pcb')

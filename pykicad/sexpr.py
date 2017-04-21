@@ -220,10 +220,10 @@ class AST(object):
 
     def to_string(self, attributes=None):
         if attributes is None:
-            attributes = self.attributes
+            attributes = self.attributes.items()
 
         tree = {}
-        for attr, value in attributes.items():
+        for attr, value in attributes:
             if value is None:
                 continue
 
