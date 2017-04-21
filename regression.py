@@ -1,5 +1,10 @@
 import difflib
+from pykicad.pcb import *
 from pykicad.module import *
+
+
+class PcbnewException(Exception):
+    pass
 
 
 def debug_print(text):
@@ -27,6 +32,18 @@ def test_parse_module(module_path):
     except:
         diff_ast(module, module2)
         raise
+
+    try:
+        pcb = Pcb(modules=[module])
+
+        with open('test.kicad_pcb', 'w+') as f:
+            f.write(str(pcb))
+
+        code = os.system('./pcbnew-loadboard.py test.kicad_pcb')
+        assert code == 0
+    except:
+        debug_print(module.to_string())
+        raise PcbnewException()
 
 
 def diff_ast(a1, a2):
@@ -79,4 +96,8 @@ if __name__ == '__main__':
     test_libraries = ['Converters_DCDC_ACDC', 'LEDs']
 
     # regression_test(list_libraries(), blacklist=blacklist)
-    regression_test(test_libraries, debug=True, blacklist=blacklist)
+
+    try:
+        regression_test(test_libraries, debug=True, blacklist=blacklist)
+    except PcbnewException:
+        os.system('pcbnew test.kicad_pcb')
