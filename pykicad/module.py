@@ -165,7 +165,10 @@ class Text(AST):
             '_attr': 'value',
             '_parser': text
         },
-        'at': number + number + Optional(number),
+        '2': {
+            '_tag': 'at',
+            '_parser': number + number + Optional(number)
+        },
         'layer': text,
         'effects': {
             'font': {
@@ -227,8 +230,14 @@ class Line(AST):
 class Circle(AST):
     tag = 'fp_circle'
     schema = {
-        'center': number + number,
-        'end': number + number,
+        '0': {
+            '_tag': 'center',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number
+        },
         'layer': text,
         'width': {
             '_parser': number,
@@ -243,9 +252,18 @@ class Circle(AST):
 class Arc(AST):
     tag = 'fp_arc'
     schema = {
-        'start': number + number,
-        'end': number + number,
-        'angle': number,
+        '0': {
+            '_tag': 'start',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number
+        },
+        '2': {
+            '_tag': 'angle',
+            '_parser': number
+        },
         'layer': text,
         'width': {
             '_parser': number,
