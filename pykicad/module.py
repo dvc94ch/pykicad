@@ -71,7 +71,8 @@ class Drill(AST):
             '_parser': number | (Suppress('oval') + number + number),
             '_printer': (lambda size:
                         'oval %s %s' % (str(size[0]), str(size[1])) \
-                        if isinstance(size, list) else str(size))
+                         if isinstance(size, list) else str(size)),
+            '_optional': True
         },
         'offset': {
             '_parser': number + number,

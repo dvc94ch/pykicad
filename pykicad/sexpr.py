@@ -152,7 +152,7 @@ def tree_to_string(tree, level=0):
         a, b = tree
         return b
     if isinstance(tree, float):
-        return '%f' % tree
+        return '%.10f' % tree
     if isinstance(tree, int):
         return str(tree)
     if isinstance(tree, list):
