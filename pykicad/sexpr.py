@@ -234,7 +234,7 @@ class AST(object):
             merge_dict(tree, found)
 
         if tree == {}:
-            tree = attributes
+            tree = self.attributes
         else:
             tree = {self.tag: tree}
 
