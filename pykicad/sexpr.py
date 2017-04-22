@@ -58,7 +58,7 @@ def sexpr(name, positional=None, children=None):
     return Suppress('(') + Suppress(name) + parser + Suppress(')')
 
 
-def generate_parser(tag, schema, attr=None):
+def generate_parser(tag, schema, attr=None, optional=False):
     def leaf(parser, attr):
         return Group(parser).setParseAction(leaf_parse_action(attr))
 
@@ -72,7 +72,10 @@ def generate_parser(tag, schema, attr=None):
         if attr is None:
             attr = tag
         assert isinstance(attr, str)
-        return leaf(parser, attr)
+        parser = leaf(parser, attr)
+        if optional:
+            parser = Optional(parser)
+        return parser
 
     if type(schema) == type and issubclass(schema, AST):
         return ast(schema, attr)
@@ -92,13 +95,13 @@ def generate_parser(tag, schema, attr=None):
         children = []
         for key, value in schema.items():
             if not (key.isdigit() or key[0] == '_'):
-                children.append(generate_parser(key, value))
+                children.append(generate_parser(key, value, optional=True))
 
         parser = sexpr(tag, positional, children)
 
     if schema.get('_multiple', False):
         parser = ZeroOrMore(parser)
-    elif schema.get('_optional', False):
+    elif schema.get('_optional', optional):
         parser = Optional(parser)
 
     return parser

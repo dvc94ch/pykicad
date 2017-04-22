@@ -71,13 +71,9 @@ class Drill(AST):
             '_parser': number | (Suppress('oval') + number + number),
             '_printer': (lambda size:
                         'oval %s %s' % (str(size[0]), str(size[1])) \
-                         if isinstance(size, list) else str(size)),
-            '_optional': True
+                         if isinstance(size, list) else str(size))
         },
-        'offset': {
-            '_parser': number + number,
-            '_optional': True
-        },
+        'offset': number + number,
     }
 
     def __init__(self, size, offset=None):
@@ -106,37 +102,17 @@ class Pad(AST):
         },
         'drill': {
             '_parser': Drill,
-            '_printer': Drill.to_string,
-            '_optional': True
+            '_printer': Drill.to_string
         },
-        'rect_delta': {
-            '_parser': number + number,
-            '_optional': True
-        },
-        'solder_mask_margin': {
-            '_parser': number,
-            '_optional': True
-        },
-        'solder_paste_margin': {
-            '_parser': number,
-            '_optional': True
-        },
-        'solder_paste_margin_ratio': {
-            '_parser': number,
-            '_optional': True
-        },
-        'clearance': {
-            '_parser': number,
-            '_optional': True
-        },
-        'zone_connect': {
-            '_parser': number,
-            '_optional': True
-        },
+        'rect_delta': number + number,
+        'solder_mask_margin': number,
+        'solder_paste_margin': number,
+        'solder_paste_margin_ratio': number,
+        'clearance': number,
+        'zone_connect': number,
         'net': {
             '_parser': Net,
             '_printer': Net.to_string,
-            '_optional': True
         }
     }
 
@@ -173,26 +149,14 @@ class Text(AST):
         'layer': text,
         'effects': {
             'font': {
-                'size': {
-                    '_parser': number + number,
-                    '_optional': True
-                },
-                'thickness': {
-                    '_parser': number,
-                    '_optional': True
-                },
-                '_optional': True
+                'size': number + number,
+                'thickness': number
             },
-            'justify': {
-                '_parser': text,
-                '_optional': True
-            },
-            '_optional': True
+            'justify': text
         },
         'hide': {
             '_parser': Literal('hide').setParseAction(lambda x: True),
             '_printer': lambda hide: 'hide' if hide else '',
-            '_optional': True,
             '_tag': False,
             '_attr': 'hide'
         }
@@ -219,8 +183,7 @@ class Line(AST):
         },
         'layer': text,
         'width': {
-            '_parser': number,
-            '_optional': True
+            '_parser': number
         }
     }
 
@@ -240,10 +203,7 @@ class Circle(AST):
             '_parser': number + number
         },
         'layer': text,
-        'width': {
-            '_parser': number,
-            '_optional': True
-        }
+        'width': number
     }
 
     def __init__(self, center, end, layer, width=None):
@@ -266,10 +226,7 @@ class Arc(AST):
             '_parser': number
         },
         'layer': text,
-        'width': {
-            '_parser': number,
-            '_optional': True
-        }
+        'width': number
     }
 
     def __init__(self, start, end, angle, layer, width=None):
@@ -310,34 +267,13 @@ class Module(AST):
             '_parser': text
         },
         'layer': text,
-        'descr': {
-            '_parser': text,
-            '_optional': True
-        },
-        'tags': {
-            '_parser': text,
-            '_optional': True
-        },
-        'attr': {
-            '_parser': text,
-            '_optional': True
-        },
-        'at': {
-            '_parser': number + number + Optional(number),
-            '_optional': True
-        },
-        'tedit': {
-            '_parser': text,
-            '_optional': True
-        },
-        'tstamp': {
-            '_parser': text,
-            '_optional': True
-        },
-        'solder_mask_margin': {
-            '_parser': number,
-            '_optional': True
-        },
+        'descr': text,
+        'tags': text,
+        'attr': text,
+        'at': number + number + Optional(number),
+        'tedit': text,
+        'tstamp': text,
+        'solder_mask_margin': number,
         'model': {
             '_parser': Model,
             '_printer': Model.to_string,
