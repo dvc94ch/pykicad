@@ -241,7 +241,7 @@ class AST(object):
         if not attr == 'attributes' and attr in self.attributes:
             self.attributes[attr] = value
         else:
-            super().__setattr__(attr, value)
+            super(AST, self).__setattr__(attr, value)
 
     def __eq__(self, other):
         return self.attributes == other.attributes

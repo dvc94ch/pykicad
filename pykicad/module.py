@@ -66,7 +66,7 @@ class Net(AST):
             code = Net.counter
             Net.counter += 1
 
-        super().__init__(code=code, name=name)
+        super(Net, self).__init__(code=code, name=name)
 
 class Drill(AST):
     tag = 'drill'
@@ -83,7 +83,7 @@ class Drill(AST):
     }
 
     def __init__(self, size, offset=None):
-        super().__init__(size=size, offset=offset)
+        super(Drill, self).__init__(size=size, offset=offset)
 
 
 class Pad(AST):
@@ -123,14 +123,14 @@ class Pad(AST):
                  clearance=None, zone_connect=None):
 
 
-        super().__init__(name=name, type=type, shape=shape, size=size, at=at,
-                         rect_delta=rect_delta, roundrect_rratio=roundrect_rratio,
-                         layers=layers, drill=drill, clearance=clearance,
-                         net=net, die_length=die_length,
-                         solder_mask_margin=solder_mask_margin,
-                         solder_paste_margin=solder_paste_margin,
-                         solder_paste_margin_ratio=solder_paste_margin_ratio,
-                         zone_connect=zone_connect)
+        super(Pad, self).__init__(name=name, type=type, shape=shape, size=size, at=at,
+                                  rect_delta=rect_delta, roundrect_rratio=roundrect_rratio,
+                                  layers=layers, drill=drill, clearance=clearance,
+                                  net=net, die_length=die_length,
+                                  solder_mask_margin=solder_mask_margin,
+                                  solder_paste_margin=solder_paste_margin,
+                                  solder_paste_margin_ratio=solder_paste_margin_ratio,
+                                  zone_connect=zone_connect)
 
     def is_valid(self):
         if self.shape == 'trapezoid' and self.rect_delta is None:
@@ -179,9 +179,9 @@ class Text(AST):
                  size=None, thickness=None, bold=False, italic=False,
                  justify=None, hide=False):
 
-        super().__init__(type=type, text=text, at=at, layer=layer,
-                         size=size, thickness=thickness, bold=bold,
-                         italic=italic, justify=justify, hide=hide)
+        super(Text, self).__init__(type=type, text=text, at=at, layer=layer,
+                                   size=size, thickness=thickness, bold=bold,
+                                   italic=italic, justify=justify, hide=hide)
 
 
 class Line(AST):
@@ -200,7 +200,7 @@ class Line(AST):
     }
 
     def __init__(self, start, end, layer='F.SilkS', width=None):
-        super().__init__(start=start, end=end, layer=layer, width=width)
+        super(Line, self).__init__(start=start, end=end, layer=layer, width=width)
 
 
 class Circle(AST):
@@ -219,7 +219,7 @@ class Circle(AST):
     }
 
     def __init__(self, center, end, layer='F.SilkS', width=None):
-        super().__init__(center=center, end=end, layer=layer, width=width)
+        super(Circle, self).__init__(center=center, end=end, layer=layer, width=width)
 
 
 class Arc(AST):
@@ -242,7 +242,7 @@ class Arc(AST):
     }
 
     def __init__(self, start, end, angle, layer='F.SilkS', width=None):
-        super().__init__(start=start, end=end, angle=angle,
+        super(Arc, self).__init__(start=start, end=end, angle=angle,
                          layer=layer, width=width)
 
 
@@ -268,7 +268,7 @@ class Model(AST):
     }
 
     def __init__(self, path, at, scale, rotate):
-        super().__init__(path=path, at=at, scale=scale, rotate=rotate)
+        super(Model, self).__init__(path=path, at=at, scale=scale, rotate=rotate)
 
 
 class Module(AST):
@@ -342,23 +342,23 @@ class Module(AST):
         if not isinstance(arcs, list):
             arcs = [arcs]
 
-        super().__init__(name=name, version=version, locked=locked, placed=placed,
-                         layer=layer, tedit=tedit, tstamp=tstamp,
-                         at=at, descr=descr, tags=tags, path=path, attr=attr,
-                         autoplace_cost90=autoplace_cost90,
-                         autoplace_cost180=autoplace_cost180,
-                         solder_mask_margin=solder_mask_margin,
-                         solder_paste_margin=solder_paste_margin,
-                         solder_paste_ratio=solder_paste_ratio,
-                         clearance=clearance, zone_connect=zone_connect,
-                         thermal_width=thermal_width, thermal_gap=thermal_gap,
-                         texts=texts, lines=lines, circles=circles, arcs=arcs,
-                         curves=curves, polygons=polygons, pads=pads, model=model)
+        super(Module, self).__init__(name=name, version=version, locked=locked, placed=placed,
+                                     layer=layer, tedit=tedit, tstamp=tstamp,
+                                     at=at, descr=descr, tags=tags, path=path, attr=attr,
+                                     autoplace_cost90=autoplace_cost90,
+                                     autoplace_cost180=autoplace_cost180,
+                                     solder_mask_margin=solder_mask_margin,
+                                     solder_paste_margin=solder_paste_margin,
+                                     solder_paste_ratio=solder_paste_ratio,
+                                     clearance=clearance, zone_connect=zone_connect,
+                                     thermal_width=thermal_width, thermal_gap=thermal_gap,
+                                     texts=texts, lines=lines, circles=circles, arcs=arcs,
+                                     curves=curves, polygons=polygons, pads=pads, model=model)
 
 
     @classmethod
     def from_file(cls, path):
-        module = open(path, 'r', encoding='utf-8').read()
+        module = open(path, 'r').read().decode('utf-8')
         return cls.parse(module)
 
     @classmethod
