@@ -27,4 +27,4 @@ class Pcb(AST):
     }
 
     def __init__(self, version=1, host=['pykicad', 'x.x.x'], nets=[], modules=[]):
-        super().__init__(version=version, host=host, nets=nets, modules=modules)
+        super(Pcb, self).__init__(version=version, host=host, nets=nets, modules=modules)
