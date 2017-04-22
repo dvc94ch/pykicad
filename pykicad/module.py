@@ -76,7 +76,8 @@ class Drill(AST):
             '_parser': number | (Suppress('oval') + number + number),
             '_printer': (lambda size:
                         'oval %s %s' % (str(size[0]), str(size[1])) \
-                         if isinstance(size, list) else str(size))
+                         if isinstance(size, list) else str(size)),
+            '_optional': True
         },
         'offset': number + number,
     }
@@ -98,47 +99,62 @@ class Pad(AST):
         },
         '2': {
             '_attr': 'shape',
-            '_parser': Literal('circle') | 'rect' | 'oval' | 'trapezoid'
+            '_parser': Literal('circle') | 'rect' | 'roundrect' | 'oval' | 'trapezoid'
         },
-        'at': number + number + Optional(number),
         'size': number + number,
-        'layers': {
-            '_parser': Group(OneOrMore(text)).setParseAction(lambda x: [list(x[0])]),
-        },
-        'drill': Drill,
+        'at': number + number + Optional(number),
         'rect_delta': number + number,
+        'roundrect_rratio': number,
+        'drill': Drill,
+        'layers': Group(OneOrMore(text)).setParseAction(lambda x: [list(x[0])]),
+        'net': Net,
+        'die_length': number,
         'solder_mask_margin': number,
         'solder_paste_margin': number,
         'solder_paste_margin_ratio': number,
         'clearance': number,
-        'zone_connect': number,
-        'net': Net
+        'zone_connect': integer
     }
 
-    def __init__(self, name, type, shape, at, size, layers,
-                 drill=None, rect_delta=None, clearance=None,
-                 zone_connect=None, solder_mask_margin=None,
+    def __init__(self, name, type='smd', shape='rect', size=None, at=None,
+                 rect_delta=None, roundrect_rratio=None, drill=None,
+                 layers=['F.Cu'], net=None, die_length=None, solder_mask_margin=None,
                  solder_paste_margin=None, solder_paste_margin_ratio=None,
-                 net=None):
+                 clearance=None, zone_connect=None):
 
-        super().__init__(name=name, type=type, shape=shape, at=at, size=size,
-                         layers=layers, drill=drill, rect_delta=rect_delta,
-                         clearance=clearance, net=net,
-                         zone_connect=zone_connect,
+
+        super().__init__(name=name, type=type, shape=shape, size=size, at=at,
+                         rect_delta=rect_delta, roundrect_rratio=roundrect_rratio,
+                         layers=layers, drill=drill, clearance=clearance,
+                         net=net, die_length=die_length,
                          solder_mask_margin=solder_mask_margin,
                          solder_paste_margin=solder_paste_margin,
-                         solder_paste_margin_ratio=solder_paste_margin_ratio)
+                         solder_paste_margin_ratio=solder_paste_margin_ratio,
+                         zone_connect=zone_connect)
+
+    def is_valid(self):
+        if self.shape == 'trapezoid' and self.rect_delta is None:
+            return False
+
+        if self.shape == 'roundrect' and self.roundrect_rratio is None:
+            return False
+
+        if self.shape == 'thru_hole' or self.shape == 'np_thru_hole':
+            if self.drill is None:
+                return False
+
+        return True
 
 
 class Text(AST):
     tag = 'fp_text'
     schema = {
         '0': {
-            '_attr': 'prop',
-            '_parser': text
+            '_attr': 'type',
+            '_parser': Literal('reference') | 'value' | 'user'
         },
         '1': {
-            '_attr': 'value',
+            '_attr': 'text',
             '_parser': text
         },
         '2': {
@@ -149,24 +165,23 @@ class Text(AST):
         'effects': {
             'font': {
                 'size': number + number,
-                'thickness': number
+                'thickness': number,
+                'bold': flag('bold'),
+                'italic': flag('italic')
             },
-            'justify': text
+            'justify': Literal('left') | 'right' | 'top' | 'bottom' | 'mirror',
+            'hide': flag('hide')
         },
-        'hide': {
-            '_parser': Literal('hide').setParseAction(lambda x: True),
-            '_printer': lambda hide: 'hide' if hide else '',
-            '_tag': False,
-            '_attr': 'hide'
-        }
+        'hide': flag('hide')
     }
 
-    def __init__(self, prop, value, at, layer, hide=False, size=None,
-                 thickness=None, justify=None):
+    def __init__(self, type='user', text='**', at=None, layer='F.SilkS',
+                 size=None, thickness=None, bold=False, italic=False,
+                 justify=None, hide=False):
 
-        super().__init__(prop=prop, value=value, at=at, layer=layer,
-                         hide=hide, size=size, thickness=thickness,
-                         justify=justify)
+        super().__init__(type=type, text=text, at=at, layer=layer,
+                         size=size, thickness=thickness, bold=bold,
+                         italic=italic, justify=justify, hide=hide)
 
 
 class Line(AST):
@@ -184,7 +199,7 @@ class Line(AST):
         'width': number
     }
 
-    def __init__(self, start, end, layer, width=None):
+    def __init__(self, start, end, layer='F.SilkS', width=None):
         super().__init__(start=start, end=end, layer=layer, width=width)
 
 
@@ -203,7 +218,7 @@ class Circle(AST):
         'width': number
     }
 
-    def __init__(self, center, end, layer, width=None):
+    def __init__(self, center, end, layer='F.SilkS', width=None):
         super().__init__(center=center, end=end, layer=layer, width=width)
 
 
@@ -226,7 +241,7 @@ class Arc(AST):
         'width': number
     }
 
-    def __init__(self, start, end, angle, layer, width=None):
+    def __init__(self, start, end, angle, layer='F.SilkS', width=None):
         super().__init__(start=start, end=end, angle=angle,
                          layer=layer, width=width)
 
@@ -263,19 +278,26 @@ class Module(AST):
             '_attr': 'name',
             '_parser': text
         },
-        'layer': text,
+        'version': integer,
+        'locked': flag('locked'),
+        'placed': flag('placed'),
+        'layer': Literal('F.Cu') | 'B.Cu',
+        'tedit': hex,
+        'tstamp': hex,
+        'at': number + number + Optional(number),
         'descr': text,
         'tags': text,
-        'attr': text,
-        'at': number + number + Optional(number),
-        'tedit': text,
-        'tstamp': text,
+        'path': text,
+        'attr': Literal('smd') | 'virtual',
+        'autoplace_cost90': integer,
+        'autoplace_cost180': integer,
         'solder_mask_margin': number,
-        'model': Model,
-        'pads': {
-            '_parser': Pad,
-            '_multiple': True
-        },
+        'solder_paste_margin': number,
+        'solder_paste_ratio': number,
+        'clearance': number,
+        'zone_connect': integer,
+        'thermal_width': number,
+        'thermal_gap': number,
         'texts': {
             '_parser': Text,
             '_multiple': True
@@ -291,12 +313,23 @@ class Module(AST):
         'arcs': {
             '_parser': Arc,
             '_multiple': True
-        }
+        },
+        'pads': {
+            '_parser': Pad,
+            '_multiple': True
+        },
+        'model': Model
     }
 
-    def __init__(self, name, layer, descr=None, tags=None, attr=None, at=None,
-                 tedit=None, tstamp=None, solder_mask_margin=None, model=None,
-                 pads=[], lines=[], texts=[], circles=[], arcs=[]):
+    def __init__(self, name, version=None, locked=False, placed=False,
+                 layer='F.Cu', tedit=None, tstamp=None, at=None,
+                 descr=None, tags=None, path=None, attr=None,
+                 autoplace_cost90=None, autoplace_cost180=None,
+                 solder_mask_margin=None, solder_paste_margin=None,
+                 solder_paste_ratio=None, clearance=None,
+                 zone_connect=None, thermal_width=None, thermal_gap=None,
+                 texts=[], lines=[], circles=[], arcs=[], curves=[], polygons=[],
+                 pads=[], model=None):
 
         if not isinstance(pads, list):
             pads = [pads]
@@ -309,10 +342,18 @@ class Module(AST):
         if not isinstance(arcs, list):
             arcs = [arcs]
 
-        super().__init__(name=name, layer=layer, descr=descr, tags=tags,
+        super().__init__(name=name, version=version, locked=locked, placed=placed,
+                         layer=layer, tedit=tedit, tstamp=tstamp,
+                         at=at, descr=descr, tags=tags, path=path, attr=attr,
+                         autoplace_cost90=autoplace_cost90,
+                         autoplace_cost180=autoplace_cost180,
                          solder_mask_margin=solder_mask_margin,
-                         attr=attr, at=at, model=model, pads=pads, texts=texts,
-                         lines=lines, circles=circles, arcs=arcs)
+                         solder_paste_margin=solder_paste_margin,
+                         solder_paste_ratio=solder_paste_ratio,
+                         clearance=clearance, zone_connect=zone_connect,
+                         thermal_width=thermal_width, thermal_gap=thermal_gap,
+                         texts=texts, lines=lines, circles=circles, arcs=arcs,
+                         curves=curves, polygons=polygons, pads=pads, model=model)
 
 
     @classmethod

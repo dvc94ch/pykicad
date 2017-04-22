@@ -5,10 +5,21 @@ from functools import reduce
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
 number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
 integer = Word(nums)
+hex = Word(hexnums)
 
 dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
+
+
+
+def flag(name):
+    return {
+        '_parser': Literal(name).setParseAction(lambda x: True),
+        '_printer': lambda flag: name if flag else '',
+        '_tag': False,
+        '_attr': name
+    }
 
 
 def parse_action(tokens):
