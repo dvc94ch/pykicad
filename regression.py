@@ -11,7 +11,7 @@ class PcbnewException(Exception):
 
 def debug_print(text):
     for i, line in enumerate(text.split('\n')):
-        sys.stdout.buffer.write(("%4d: %s\n" % (i + 1, line)).encode('utf-8'))
+        sys.stdout.write(("%4d: %s\n" % (i + 1, line)).encode('utf-8'))
 
 
 def randomize_attribute_order(self):
@@ -21,7 +21,7 @@ Module.to_string = randomize_attribute_order
 
 
 def test_parse_module(module_path):
-    module_text = open(module_path, 'r', encoding='utf-8').read()
+    module_text = open(module_path, 'r').read().decode('utf-8')
 
     try:
         module = Module.parse(module_text)

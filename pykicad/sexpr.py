@@ -12,6 +12,12 @@ number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
 
 
+# Python 2 compatibility
+try:
+  basestring
+except NameError:
+  basestring = str
+
 
 def flag(name):
     return {
@@ -78,11 +84,11 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
     if isinstance(schema, ParserElement):
         parser = schema
-        if isinstance(tag, str):
+        if isinstance(tag, basestring):
             parser = sexpr(tag, parser)
         if attr is None:
             attr = tag
-        assert isinstance(attr, str)
+        assert isinstance(attr, basestring)
         parser = leaf(parser, attr)
         if optional:
             parser = Optional(parser)
@@ -182,7 +188,7 @@ def find_attr(attr, value, schema):
 
 
 def tree_to_string(tree, level=0):
-    if isinstance(tree, str):
+    if isinstance(tree, basestring):
         if tree == '':
             return '""'
         if ' ' in tree or '(' in tree or ')' in tree:
@@ -241,7 +247,7 @@ class AST(object):
         if not attr == 'attributes' and attr in self.attributes:
             self.attributes[attr] = value
         else:
-            super().__setattr__(attr, value)
+            super(AST, self).__setattr__(attr, value)
 
     def __eq__(self, other):
         return self.attributes == other.attributes
