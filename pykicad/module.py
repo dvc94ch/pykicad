@@ -100,18 +100,14 @@ class Pad(AST):
         'layers': {
             '_parser': Group(OneOrMore(text)).setParseAction(lambda x: [list(x[0])]),
         },
-        'drill': {
-            '_parser': Drill,
-        },
+        'drill': Drill,
         'rect_delta': number + number,
         'solder_mask_margin': number,
         'solder_paste_margin': number,
         'solder_paste_margin_ratio': number,
         'clearance': number,
         'zone_connect': number,
-        'net': {
-            '_parser': Net,
-        }
+        'net': Net
     }
 
     def __init__(self, name, type, shape, at, size, layers,
@@ -180,9 +176,7 @@ class Line(AST):
             '_parser': number + number
         },
         'layer': text,
-        'width': {
-            '_parser': number
-        }
+        'width': number
     }
 
     def __init__(self, start, end, layer, width=None):
@@ -272,10 +266,7 @@ class Module(AST):
         'tedit': text,
         'tstamp': text,
         'solder_mask_margin': number,
-        'model': {
-            '_parser': Model,
-            '_optional': True
-        },
+        'model': Model,
         'pads': {
             '_parser': Pad,
             '_multiple': True

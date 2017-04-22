@@ -78,7 +78,10 @@ def generate_parser(tag, schema, attr=None, optional=False):
         return parser
 
     if type(schema) == type and issubclass(schema, AST):
-        return ast(schema, attr)
+        parser = ast(schema, attr)
+        if optional:
+            parser = Optional(parser)
+        return parser
 
 
     if '_parser' in schema:
@@ -95,7 +98,10 @@ def generate_parser(tag, schema, attr=None, optional=False):
         children = []
         for key, value in schema.items():
             if not (key.isdigit() or key[0] == '_'):
-                children.append(generate_parser(key, value, optional=True))
+                attr = None
+                if type(value) == type:
+                    attr = key
+                children.append(generate_parser(key, value, attr=attr, optional=True))
 
         parser = sexpr(tag, positional, children)
 
@@ -113,11 +119,13 @@ def find_attr(attr, value, schema):
             return (lambda value: ' '.join(map(printer, value))
                     if isinstance(value, list) else printer(value))
 
-        printer = False
+        if type(schema) == type:
+            return schema.to_string
 
         if not isinstance(schema, dict):
             return False
 
+        printer = False
         parser = schema.get('_parser', False)
         if type(parser) == type:
             printer = parser.to_string
@@ -128,6 +136,7 @@ def find_attr(attr, value, schema):
             printer = closure(printer)
 
         return printer
+
 
     if not isinstance(schema, dict):
         return None
@@ -177,8 +186,6 @@ def tree_to_string(tree, level=0):
         return str(tree)
     if isinstance(tree, list):
         return ' '.join(map(tree_to_string, tree))
-    if issubclass(type(tree), AST):
-        return tree.to_string()
 
     i, pos = 0, []
     while str(i) in tree:
