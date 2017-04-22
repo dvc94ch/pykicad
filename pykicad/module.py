@@ -102,7 +102,6 @@ class Pad(AST):
         },
         'drill': {
             '_parser': Drill,
-            '_printer': Drill.to_string
         },
         'rect_delta': number + number,
         'solder_mask_margin': number,
@@ -112,7 +111,6 @@ class Pad(AST):
         'zone_connect': number,
         'net': {
             '_parser': Net,
-            '_printer': Net.to_string,
         }
     }
 
@@ -276,32 +274,26 @@ class Module(AST):
         'solder_mask_margin': number,
         'model': {
             '_parser': Model,
-            '_printer': Model.to_string,
             '_optional': True
         },
         'pads': {
             '_parser': Pad,
-            '_printer': Pad.to_string,
             '_multiple': True
         },
         'texts': {
             '_parser': Text,
-            '_printer': Text.to_string,
             '_multiple': True
         },
         'lines': {
             '_parser': Line,
-            '_printer': Line.to_string,
             '_multiple': True
         },
         'circles': {
             '_parser': Circle,
-            '_printer': Circle.to_string,
             '_multiple': True
         },
         'arcs': {
             '_parser': Arc,
-            '_printer': Arc.to_string,
             '_multiple': True
         }
     }

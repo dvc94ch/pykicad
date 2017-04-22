@@ -108,27 +108,44 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
 
 def find_attr(attr, value, schema):
-    def printer(printer, value, multiple):
-        if multiple and isinstance(value, list):
-            return ' '.join(map(printer, value))
-        return printer(value)
+    def printer(schema):
+        def closure(printer):
+            return (lambda value: ' '.join(map(printer, value))
+                    if isinstance(value, list) else printer(value))
+
+        printer = False
+
+        if not isinstance(schema, dict):
+            return False
+
+        parser = schema.get('_parser', False)
+        if type(parser) == type:
+            printer = parser.to_string
+
+        printer = schema.get('_printer', printer)
+
+        if schema.get('_multiple', False):
+            printer = closure(printer)
+
+        return printer
 
     if not isinstance(schema, dict):
         return None
 
     if schema.get('_attr', schema.get('_tag', False)) == attr:
-        if '_printer' in schema:
-            value = ('_', printer(schema['_printer'], value,
-                                  schema.get('_multiple', False)))
+        printer = printer(schema)
+        if printer:
+            value = ('_', printer(value))
 
         if schema.get('_tag', False):
-            return {schema['_tag']: value}
+            value = {schema['_tag']: value}
+
         return value
 
     if attr in schema:
-        if isinstance(schema[attr], dict) and '_printer' in schema[attr]:
-            value = printer(schema[attr]['_printer'], value,
-                            schema[attr].get('_multiple', False))
+        printer = printer(schema[attr])
+        if printer:
+            value = printer(value)
             attr = '_' + attr
 
         return {attr: value}
