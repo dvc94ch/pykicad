@@ -59,8 +59,13 @@ class Net(AST):
             '_parser': text
         }
     }
+    counter = 1
 
-    def __init__(self, code, name):
+    def __init__(self, name='', code=None):
+        if code is None:
+            code = Net.counter
+            Net.counter += 1
+
         super().__init__(code=code, name=name)
 
 class Drill(AST):

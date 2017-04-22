@@ -14,7 +14,7 @@ stuff.
 from pykicad.pcb import *
 from pykicad.module import *
 
-vi, vo, gnd = Net(1, 'VI'), Net(2, 'VO'), Net(3, 'GND')
+vi, vo, gnd = Net('VI'), Net('VO'), Net('GND')
 
 r1 = Module.from_library('Resistors_SMD', 'R_0805')
 r2 = Module.from_library('Resistors_SMD', 'R_0805')

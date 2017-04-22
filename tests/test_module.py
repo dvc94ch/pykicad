@@ -105,3 +105,11 @@ class ModuleTests(unittest.TestCase):
         assert module.pads[1].name == '2'
         assert module.pads[1].drill.size == 0.8
         assert Module.parse(module.to_string()) == module
+
+
+class NetTests(unittest.TestCase):
+    def test_net_auto_numbering(self):
+        n1, n2, n3 = Net(), Net(), Net()
+        assert n1.code == 1
+        assert n2.code == 2
+        assert n3.code == 3
