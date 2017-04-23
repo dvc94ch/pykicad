@@ -1,6 +1,7 @@
 import os
 import os.path
 import sys
+from io import open
 from pykicad.sexpr import *
 
 
@@ -324,7 +325,7 @@ class Module(AST):
     }
 
     def __init__(self, name, version=None, locked=False, placed=False,
-                 layer='F.Cu', tedit=None, tstamp=None, at=None,
+                 layer='F.Cu', tedit=None, tstamp=None, at=[0, 0],
                  descr=None, tags=None, path=None, attr=None,
                  autoplace_cost90=None, autoplace_cost180=None,
                  solder_mask_margin=None, solder_paste_margin=None,
@@ -362,7 +363,7 @@ class Module(AST):
 
     @classmethod
     def from_file(cls, path):
-        module = open(path, 'r').read().decode('utf-8')
+        module = open(path, 'r', encoding='utf-8').read()
         return cls.parse(module)
 
     @classmethod

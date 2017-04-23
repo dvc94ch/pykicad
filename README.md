@@ -11,22 +11,47 @@ stuff.
 
 ## Usage
 ```python
+from numpy import array
 from pykicad.pcb import *
 from pykicad.module import *
+from pykicad.boundarybox import *
 
+# Define nets
 vi, vo, gnd = Net('VI'), Net('VO'), Net('GND')
 
+# Load footprints
 r1 = Module.from_library('Resistors_SMD', 'R_0805')
 r2 = Module.from_library('Resistors_SMD', 'R_0805')
 
+# Connect pads
 r1.pads[0].net = vi
 r1.pads[1].net = vo
 r2.pads[0].net = vo
 r2.pads[1].net = gnd
 
+# Space components
+r2.at = [module_boundary(r1).size[0] + 0.5, 0]
+
+
+# Draw segments
+start = array(r1.pads[1].at) + array(r1.at)
+end = array(r2.pads[0].at) + array(r2.at)
+
+s1 = Segment(start=start.tolist(), end=end.tolist(), net=vo.code)
+
+
+# Insert via
+pos = start + (end - start) / 2
+v1 = Via(at=pos.tolist(), size=.3, drill=Drill(.2), net=vo.code)
+
+
+# Create PCB
 pcb = Pcb()
 pcb.modules += [r1, r2]
 pcb.nets += [vi, vo, gnd]
+pcb.segments += [s1]
+pcb.vias += [v1]
+
 
 with open('project.kicad_pcb', 'w+') as f:
     f.write(str(pcb))
