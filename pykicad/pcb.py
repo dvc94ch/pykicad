@@ -1,5 +1,5 @@
 from pykicad.sexpr import *
-from pykicad.module import Module, Net, Drill
+from pykicad.module import Module, Net
 
 
 class Segment(AST):
@@ -28,7 +28,7 @@ class Via(AST):
         'blind': flag('blind'),
         'at': number + number,
         'size': number,
-        'drill': Drill,
+        'drill': number,
         'layers': Group(OneOrMore(text)).setParseAction(lambda x: [list(x[0])]),
         'net': integer,
         'tstamp': hex,
@@ -40,6 +40,114 @@ class Via(AST):
         super(Via, self).__init__(micro=micro, blind=blind, at=at, size=size,
                                   drill=drill, layers=layers, net=net,
                                   tstamp=tstamp, status=status)
+
+
+class Setup(AST):
+    tag = 'setup'
+    schema = {
+        'last_trace_width': number,
+        'user_trace_width': number,
+        'trace_clearance': number,
+        'zone_clearance': number,
+        'zone_45_only': yes_no,
+        'trace_min': number,
+        'segment_width': number,
+        'edge_width': number,
+        'via_size': number,
+        'via_drill': number,
+        'via_min_size': number,
+        'via_min_drill': number,
+        'user_via': number + number,
+        'uvia_size': number,
+        'uvia_drill': number,
+        'uvias_allowed': yes_no,
+        'blind_buried_vias_allowed': yes_no,
+        'uvia_min_size': number,
+        'uvia_min_drill': number,
+        'pcb_text_width': number,
+        'pcb_text_size': number + number,
+        'mod_edge_width': number,
+        'mod_text_size': number + number,
+        'mod_text_width': number,
+        'pad_size': number + number,
+        'pad_drill': number,
+        'pad_to_mask_clearance': number,
+        'solder_mask_min_width': number,
+        'pad_to_paste_clearance': number,
+        'pad_to_paste_clearance_ratio': number,
+        'grid_origin': number + number,
+        'aux_axis_origin': number + number,
+        'visible_elements': hex,
+        'pcbplotparams': {
+            'layerselection': text,
+            'usegerberextensions': boolean,
+            'excludeedgelayer': boolean,
+            'linewidth': number,
+            'plotframeref': boolean,
+            'viasonmask': boolean,
+            'mode': integer,
+            'useauxorigin': boolean,
+            'hpglpennumber': integer,
+            'hpglpenspeed': integer,
+            'hpglpendiameter': integer,
+            'psnegative': boolean,
+            'psa4output': boolean,
+            'plotreference': boolean,
+            'plotvalue': boolean,
+            'plotinvisibletext': boolean,
+            'padsonsilk': boolean,
+            'subtractmaskfromsilk': boolean,
+            'outputformat': integer,
+            'mirror': boolean,
+            'drillshape': integer,
+            'scaleselection': integer,
+            'outputdirectory': text
+        },
+    }
+
+    def __init__(self, user_trace_width=None, trace_clearance=None,
+                 zone_clearance=None, zone_45_only=None, trace_min=None,
+                 segment_width=None, edge_width=None, via_size=None,
+                 via_min_size=None, via_min_drill=None, user_via=None,
+                 uvia_size=None, uvia_drill=None, uvias_allowed=None,
+                 blind_buried_vias_allowed=None, uvia_min_size=None,
+                 uvia_min_drill=None, pcb_text_width=None, pcb_text_size=None,
+                 mod_edge_width=None, mod_text_size=None, mod_text_width=None,
+                 pad_size=None, pad_drill=None, pad_to_mask_clearance=None,
+                 solder_mask_min_width=None, pad_to_paste_clearance=None,
+                 pad_to_paste_clearance_ratio=None, grid_origin=None,
+                 visible_elements=None, pcbplotparams=None):
+        super(Setup, self).__init__(user_trace_width=user_trace_width,
+                                    trace_clearance=trace_clearance,
+                                    zone_clearance=zone_clearance,
+                                    zone_45_only=zone_45_only,
+                                    trace_min=trace_min,
+                                    segment_width=segment_width,
+                                    edge_width=edge_width,
+                                    via_size=via_size,
+                                    via_min_size=via_min_size,
+                                    via_min_drill=via_min_drill,
+                                    user_via=user_via,
+                                    uvia_size=uvia_size,
+                                    uvia_drill=uvia_drill,
+                                    uvias_allowed=uvias_allowed,
+                                    blind_buried_vias_allowed=blind_buried_vias_allowed,
+                                    uvia_min_size=uvia_min_size,
+                                    uvia_min_drill=uvia_min_drill,
+                                    pcb_text_width=pcb_text_width,
+                                    pcb_text_size=pcb_text_size,
+                                    mod_edge_width=mod_edge_width,
+                                    mod_text_size=mod_text_size,
+                                    mod_text_width=mod_text_width,
+                                    pad_size=pad_size,
+                                    pad_drill=pad_drill,
+                                    pad_to_mask_clearance=pad_to_mask_clearance,
+                                    solder_mask_min_width=solder_mask_min_width,
+                                    pad_to_paste_clearance=pad_to_paste_clearance,
+                                    pad_to_paste_clearance_ratio=pad_to_paste_clearance_ratio,
+                                    grid_origin=grid_origin,
+                                    visible_elements=visible_elements,
+                                    pcbplotparams=pcbplotparams)
 
 
 class Pcb(AST):
@@ -58,6 +166,7 @@ class Pcb(AST):
             '_parser': Net,
             '_multiple': True
         },
+        'setup': Setup,
         'modules': {
             '_parser': Module,
             '_multiple': True
@@ -72,7 +181,8 @@ class Pcb(AST):
         }
     }
 
-    def __init__(self, version=1, host=['pykicad', 'x.x.x'], nets=[], modules=[],
-                 segments=[], vias=[]):
-        super(Pcb, self).__init__(version=version, host=host, nets=nets,
-                                  modules=modules, segments=segments, vias=vias)
+    def __init__(self, version=1, host=['pykicad', 'x.x.x'], setup=None, nets=[],
+                 modules=[], segments=[], vias=[]):
+        super(Pcb, self).__init__(version=version, host=host, setup=setup,
+                                  nets=nets, modules=modules, segments=segments,
+                                  vias=vias)

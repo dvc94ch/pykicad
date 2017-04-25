@@ -3,6 +3,8 @@ from functools import reduce
 
 
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
+yes_no = Literal('yes') | 'no'
+boolean = Literal('true') | 'false'
 number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
 integer = Word(nums)
 hex = Word(hexnums)
@@ -10,6 +12,8 @@ hex = Word(hexnums)
 dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
+yes_no.setParseAction(lambda tokens: True if tokens[0] == 'yes' else False)
+boolean.setParseAction(lambda tokens: True if tokens[0] == 'true' else False)
 
 
 # Python 2 compatibility
@@ -197,6 +201,8 @@ def tree_to_string(tree, level=0):
     if isinstance(tree, tuple):
         a, b = tree
         return b
+    if isinstance(tree, bool):
+        return 'yes' if tree else 'no'
     if isinstance(tree, float):
         return '%.10f' % tree
     if isinstance(tree, int):
