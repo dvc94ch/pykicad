@@ -42,6 +42,82 @@ class Via(AST):
                                   tstamp=tstamp, status=status)
 
 
+class Layer(AST):
+    tag = ''
+    schema = {
+        '0': {
+            '_parser': integer,
+            '_attr': 'code'
+        },
+        '1': {
+            '_parser': text,
+            '_attr': 'name'
+        },
+        '2': {
+            '_parser': Literal('signal') | 'power' | 'mixed' | 'jumper' | 'user',
+            '_attr': 'type'
+        },
+        'hide': flag('hide')
+    }
+    cu_counter = 0
+    user_counter = 32
+
+    def __init__(self, name, code=None, type='signal', hide=None):
+        if code is None:
+            if type == 'user':
+                code = Layer.user_counter
+                Layer.user_counter += 1
+            else:
+                code = Layer.cu_counter
+                Layer.cu_counter += 1
+
+        super(Layer, self).__init__(code=code, name=name, type=type, hide=hide)
+
+
+class NetClass(AST):
+    tag = 'net_class'
+    schema = {
+        '0': {
+            '_parser': text,
+            '_attr': 'name'
+        },
+        '1': {
+            '_parser': text,
+            '_attr': 'description'
+        },
+        'clearance': number,
+        'trace_width': number,
+        'via_dia': number,
+        'via_drill': number,
+        'uvia_dia': number,
+        'uvia_drill': number,
+        'diff_pair_width': number,
+        'diff_pair_gap': number,
+        'nets': {
+            '_tag': 'add_net',
+            '_attr': 'nets',
+            '_parser': text,
+            '_multiple': True,
+            '_printer': lambda x: '(add_net %s)' % x
+        }
+    }
+
+    def __init__(self, name, description='', clearance=None, trace_width=None,
+                 via_dia=None, via_drill=None, uvia_dia=None, uvia_drill=None,
+                 diff_pair_width=None, diff_pair_gap=None, nets=[]):
+
+        if not isinstance(nets, list):
+            nets = [nets]
+
+        super(NetClass, self).__init__(name=name, description=description,
+                                       clearance=clearance, trace_width=trace_width,
+                                       via_dia=via_dia, via_drill=via_drill,
+                                       uvia_dia=uvia_dia, uvia_drill=uvia_drill,
+                                       diff_pair_width=diff_pair_width,
+                                       diff_pair_gap=diff_pair_gap,
+                                       nets=nets)
+
+
 class Setup(AST):
     tag = 'setup'
     schema = {
@@ -238,6 +314,16 @@ class Pcb(AST):
             'portrait': flag('portrait')
         },
         'setup': Setup,
+        'layers': {
+            'layers': {
+                '_parser': Layer,
+                '_multiple': True
+            }
+        },
+        'net_classes': {
+            '_parser': NetClass,
+            '_multiple': True
+        },
         'modules': {
             '_parser': Module,
             '_multiple': True
@@ -258,11 +344,15 @@ class Pcb(AST):
                  num_zones=None, num_modules=None, num_drawings=None,
                  num_links=None, title=None, date=None, rev=None, company=None,
                  comment1=None, comment2=None, comment3=None, comment4=None,
-                 page_type=None, portrait=False,
-                 setup=None, nets=[], modules=[], segments=[], vias=[]):
+                 page_type=None, portrait=None, setup=None,
+                 layers=[], nets=[], net_classes=[], modules=[], segments=[], vias=[]):
 
+        if not isinstance(layers, list):
+            layers = [layers]
         if not isinstance(nets, list):
             nets = [nets]
+        if not isinstance(net_classes, list):
+            net_classes = [net_classes]
         if not isinstance(modules, list):
             modules = [modules]
         if not isinstance(segments, list):
@@ -277,5 +367,6 @@ class Pcb(AST):
                                   comment1=comment1, comment2=comment2,
                                   comment3=comment3, comment4=comment4,
                                   page_type=page_type, portrait=portrait,
-                                  setup=setup, nets=nets, modules=modules,
+                                  setup=setup, layers=layers, nets=nets,
+                                  net_classes=net_classes, modules=modules,
                                   segments=segments, vias=vias)

@@ -3,6 +3,30 @@ from pytest import *
 from pykicad.pcb import *
 
 
+class NetClassTests(unittest.TestCase):
+    def test_parse(self):
+        nc_string = "(net_class name description (add_net GND))"
+        nc = NetClass.parse(nc_string)
+        assert nc.name == 'name'
+        assert nc.description == 'description'
+        assert nc.nets == ['GND']
+
+    def test_without_net(self):
+        nc = NetClass('default')
+        assert NetClass.parse(nc.to_string()) == nc
+
+    def test_with_net(self):
+        nc = NetClass('default')
+        nc.nets.append('GND')
+        assert NetClass.parse(nc.to_string()) == nc
+
+    def test_with_multiple_nets(self):
+        nc = NetClass('default')
+        nc.nets += ['GND', 'VO']
+        nc_str = nc.to_string()
+        assert NetClass.parse(nc.to_string()) == nc
+
+
 class PcbTests(unittest.TestCase):
     def test_minimal_pcb(self):
         pcb_string = open('tests/minimal_pcb.kicad_pcb', 'r').read()
@@ -34,4 +58,11 @@ class PcbTests(unittest.TestCase):
         pcb = Pcb(num_nets=5)
         assert Pcb.parse(pcb.to_string()) == pcb
         pcb.nets.append(Net())
+        assert Pcb.parse(pcb.to_string()) == pcb
+
+    def test_layers(self):
+        pcb = Pcb()
+        pcb.layers.append(Layer('B.Cu'))
+        assert Pcb.parse(pcb.to_string()) == pcb
+        pcb.layers.append(Layer('F.Cu'))
         assert Pcb.parse(pcb.to_string()) == pcb

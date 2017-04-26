@@ -76,7 +76,8 @@ def sexpr(name, positional=None, children=None):
                 else:
                     parser += children
 
-    return Suppress('(') + Suppress(name) + parser + Suppress(')')
+    name = Empty() if name == '' else Suppress(name)
+    return Suppress('(') + name + parser + Suppress(')')
 
 
 def generate_parser(tag, schema, attr=None, optional=False):
@@ -295,7 +296,7 @@ def tree_to_string(tree, level=0):
 
     children = []
     for key, value in tree.items():
-        if key[0] == '_':
+        if len(key) > 0 and key[0] == '_':
             if not value == '':
                 children.append(value)
         elif not key.isdigit():
