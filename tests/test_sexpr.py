@@ -97,7 +97,6 @@ class ASTTests(unittest.TestCase):
         AST.from_schema('pad', {
             'drill': {
                 '_parser': Drill,
-                '_printer': Drill.to_string
             }
         })
         ast = AST.parse('(pad (drill 0.8))')
@@ -109,9 +108,7 @@ class ASTTests(unittest.TestCase):
         AST.from_schema('sexpr', {
             'drills': {
                 '_parser': Drill,
-                '_printer': Drill.to_string,
                 '_multiple': True,
-                '_optional': True
             }
         })
         ast = AST.parse('(sexpr (drill 0.8) (drill 0.6))')
@@ -127,7 +124,6 @@ class ASTTests(unittest.TestCase):
         AST.from_schema('sexpr', {
             'drills': {
                 '_parser': Drill,
-                '_printer': Drill.to_string,
                 '_multiple': True,
             },
             'pad': {
@@ -196,3 +192,50 @@ class ASTTests(unittest.TestCase):
         ast = AST.parse('(sexpr (drill 0.6) (drill 0.8))')
         assert len(ast.drills) == 2
         assert AST.parse(ast.to_string()) == ast
+
+    def test_nested_with_same_name(self):
+        AST.from_schema('sexpr', {
+            'a': {
+                'b1': {
+                    'c': {
+                        '_parser': number,
+                        '_attr': 'b1'
+                    },
+                },
+                'b2': {
+                    'c': {
+                        '_parser': number,
+                        '_attr': 'b2'
+                    }
+                }
+            }
+        })
+        ast = AST.parse('(sexpr (a (b1 (c 1)) (b2 (c 2))))')
+        assert ast.b1 == 1
+        assert ast.b2 == 2
+        AST.parse(ast.to_string()) == ast
+
+    def test_nested_with_attr(self):
+        AST.from_schema('sexpr', {
+            'a': {
+                'b': {
+                    'c': {
+                        '_parser': number,
+                        '_attr': 'd'
+                    }
+                }
+            }
+        })
+        ast = AST.parse('(sexpr (a (b (c 1))))')
+        assert ast.d == 1
+
+    #def test_positional_nested(self):
+    #    AST.from_schema('sexpr', {
+    #        '0': {
+    #            'a': number
+    #        },
+    #        '1': {
+    #            'b': number
+    #        }
+    #    })
+    #    ast = AST.parse('(sexpr (a 1) (b 2))')

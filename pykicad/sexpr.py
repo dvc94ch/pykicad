@@ -80,49 +80,98 @@ def sexpr(name, positional=None, children=None):
 
 
 def generate_parser(tag, schema, attr=None, optional=False):
+    '''A schema is either a ParserElement, a AST subclass or a dict.  When
+    a dict contains a _parser key it is a leaf.
+
+    A leaf has an _attr name.  When no _attr name is given explicitly it
+    defaults to using the tag name.
+    '''
+
     def leaf(parser, attr):
         return Group(parser).setParseAction(leaf_parse_action(attr))
 
     def ast(ast, attr):
         return Group(ast.parser()).setParseAction(ast_parse_action(attr, ast))
 
+
+    # Case 1: schema is a ParserElement
     if isinstance(schema, ParserElement):
         parser = schema
+
         if isinstance(tag, basestring):
+            # The tag is a string so the leaf is an sexpr.
             parser = sexpr(tag, parser)
+
+        # Default to using the tag as the attr value
         if attr is None:
             attr = tag
+
+        # Assert that attr is a string, if it is not
+        # something is terribly wrong.
         assert isinstance(attr, basestring)
+
+        # Apply the default leaf parse action.
         parser = leaf(parser, attr)
+
+        # Make it optional if necessary
         if optional:
             parser = Optional(parser)
+
         return parser
 
+
+    # Case 2: schema is a subclass of AST
     if type(schema) == type and issubclass(schema, AST):
+
+        if attr is None:
+            attr = tag
+
+        assert isinstance(attr, basestring)
+
         parser = ast(schema, attr)
+
         if optional:
             parser = Optional(parser)
+
         return parser
 
 
+    # Case 3: schema is a dict or something is wrong
+    assert isinstance(schema, dict)
+
+
+    # Subcase 1: schema is a leaf node
     if '_parser' in schema:
         parser = schema['_parser']
+
+        # Something is wrong if parser is a dict
+        assert not isinstance(parser, dict)
+
         tag = schema.get('_tag', tag)
         attr = schema.get('_attr', tag)
         parser = generate_parser(tag, parser, attr)
+    # Subcase 2: schema is not a leaf node
     else:
+        # Determine positional arguments. Positional arguments are
+        # arguments that are required to be in a certain position within
+        # an sexpression. They are by default required.
         i, positional = 0, []
         while str(i) in schema:
-            positional.append(generate_parser(False, schema[str(i)]))
+            # Default tag to False for positional arguments. Positional arguments
+            # are required to have an _attr, _tag key or have a subschema.
+            positional.append(generate_parser(tag=False, schema=schema[str(i)],
+                                              attr=None, optional=False))
             i += 1
 
+        # Determine the rest of the arguments. Here the position doesn't matter
+        # within the sexpr. These default to being optional.
         children = []
         for key, value in schema.items():
+            # A key is either a number representing a positional argument a
+            # special key starting with an underscore or a subschema.
             if not (key.isdigit() or key[0] == '_'):
-                attr = None
-                if type(value) == type:
-                    attr = key
-                children.append(generate_parser(key, value, attr=attr, optional=True))
+                children.append(generate_parser(tag=key, schema=value,
+                                                attr=None, optional=True))
 
         parser = sexpr(tag, positional, children)
 
@@ -135,6 +184,13 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
 
 def find_attr(attr, value, schema):
+    def is_leaf_node(schema):
+        if not isinstance(schema, dict):
+            return True
+        if '_parser' in schema:
+            return True
+        return False
+
     def printer(schema):
         def closure(printer):
             return (lambda value: ' '.join(map(printer, value))
@@ -148,7 +204,7 @@ def find_attr(attr, value, schema):
 
         printer = False
         parser = schema.get('_parser', False)
-        if type(parser) == type:
+        if type(parser) == type and issubclass(parser, AST):
             printer = parser.to_string
 
         printer = schema.get('_printer', printer)
@@ -159,27 +215,45 @@ def find_attr(attr, value, schema):
         return printer
 
 
-    if not isinstance(schema, dict):
+    # Case 1: Schema is a leaf node
+    if is_leaf_node(schema):
+        if not isinstance(schema, dict):
+            return None
+
+        if schema.get('_attr', schema.get('_tag', False)) == attr:
+            printer = printer(schema)
+            if printer:
+                value = ('_', printer(value))
+
+            if schema.get('_tag', False):
+                value = {schema['_tag']: value}
+
+            return value
+
         return None
 
-    if schema.get('_attr', schema.get('_tag', False)) == attr:
-        printer = printer(schema)
-        if printer:
-            value = ('_', printer(value))
 
-        if schema.get('_tag', False):
-            value = {schema['_tag']: value}
+    # Case 2: Subschema is a leaf node and the schema does not
+    # overwrite the _attr.
+    if attr in schema and is_leaf_node(schema[attr]) and \
+       (not isinstance(schema[attr], dict) or
+        (schema[attr].get('_attr', attr) == attr)):
 
-        return value
+        subschema = schema[attr]
+        tag = attr
 
-    if attr in schema:
-        printer = printer(schema[attr])
+        if isinstance(subschema, dict):
+            tag = subschema.get('_tag', tag)
+
+        printer = printer(subschema)
         if printer:
             value = printer(value)
-            attr = '_' + attr
+            tag = '_' + attr
 
-        return {attr: value}
+        return {tag: value}
 
+
+    # Default: Search in subschemas
     for key, subschema in schema.items():
         if key[0] == '_':
             continue
@@ -209,6 +283,10 @@ def tree_to_string(tree, level=0):
         return str(tree)
     if isinstance(tree, list):
         return ' '.join(map(tree_to_string, tree))
+    if isinstance(tree, AST):
+        return tree.to_string()
+
+    assert isinstance(tree, dict)
 
     i, pos = 0, []
     while str(i) in tree:
@@ -218,10 +296,12 @@ def tree_to_string(tree, level=0):
     children = []
     for key, value in tree.items():
         if key[0] == '_':
-            children.append(value)
+            if not value == '':
+                children.append(value)
         elif not key.isdigit():
-            children.append('\n%s(%s %s)' % (level * '    ', key,
-                                             tree_to_string(value, level + 1)))
+            value = tree_to_string(value, level + 1)
+            if not value == '':
+                children.append('\n%s(%s %s)' % (level * '    ', key, value))
 
     return ' '.join(pos + children)
 

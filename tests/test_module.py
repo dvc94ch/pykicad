@@ -87,6 +87,20 @@ class LineTests(unittest.TestCase):
         assert Line.parse(line.to_string()) == line
 
 
+class ModelTests(unittest.TestCase):
+    def test_model(self):
+        model_string = (
+            '(model path'
+            '    (at (xyz 0 0 0))'
+            '    (scale (xyz 0 0 0))'
+            '    (rotate (xyz 0 0 0)))')
+        model = Model.parse(model_string)
+        assert model.at == [0, 0, 0]
+        assert model.scale == [0, 0, 0]
+        assert model.rotate == [0, 0, 0]
+        assert Model.parse(model.to_string()) == model
+
+
 class ModuleTests(unittest.TestCase):
     def test_module(self):
         module_string = '(module name (layer F.Cu) %s)'
@@ -98,6 +112,7 @@ class ModuleTests(unittest.TestCase):
         pads = ''
         for i in range(2):
             pads += Pad(str(i + 1), drill=Drill(0.8)).to_string()
+
         module = Module.parse(module_string % pads)
         assert module.pads[0].name == '1'
         assert module.pads[0].drill.size == 0.8

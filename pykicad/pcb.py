@@ -150,6 +150,17 @@ class Setup(AST):
                                     pcbplotparams=pcbplotparams)
 
 
+def comment(number):
+    str_num = str(number)
+    return {
+        '_tag': 'comment',
+        '_attr': 'comment' + str_num,
+        '_parser': Suppress(str_num) + text,
+        '_printer': (lambda x: '(comment %s %s)' %
+                     (str_num, tree_to_string(x)))
+    }
+
+
 class Pcb(AST):
     tag = 'kicad_pcb'
     schema = {
@@ -166,6 +177,66 @@ class Pcb(AST):
             '_parser': Net,
             '_multiple': True
         },
+        'general': {
+            'thickness': {
+                '_parser': number,
+                '_attr': 'board_thickness'
+            },
+            'area': {
+                '_parser': number + number + number + number,
+                '_attr': 'board_area'
+            },
+            'nets': {
+                '_parser': integer,
+                '_attr': 'num_nets'
+            },
+            'tracks': {
+                '_parser': integer,
+                '_attr': 'num_tracks'
+            },
+            'zones': {
+                '_parser': integer,
+                '_attr': 'num_zones'
+            },
+            'modules': {
+                '_parser': integer,
+                '_attr': 'num_modules'
+            },
+            'no_connects': {
+                '_parser': integer,
+                '_attr': 'num_no_connects'
+            },
+            'drawings': {
+                '_parser': integer,
+                '_attr': 'num_drawings'
+            },
+            'links': {
+                '_parser': integer,
+                '_attr': 'num_links'
+            },
+        },
+        'title_block': {
+            'title': text,
+            'date': text,
+            'rev': text,
+            'company': text,
+            'comment1': comment(1),
+            'comment2': comment(2),
+            'comment3': comment(3),
+            'comment4': comment(4)
+        },
+        'page': {
+            '0': {
+                '_parser': Literal('A4') | 'A3' | 'A2' | 'A1' | 'A0' | \
+                    'A' | 'B' | 'C' | 'D' | 'E' | \
+                    'USLedger' | 'USLegal' | 'USLetter' | \
+                    'GERBER' | (Suppress('User') + number + number),
+                '_attr': 'page_type',
+                '_printer': (lambda x: 'User %d %d' % (x[0], x[1])
+                             if isinstance(x, list) else x)
+            },
+            'portrait': flag('portrait')
+        },
         'setup': Setup,
         'modules': {
             '_parser': Module,
@@ -181,8 +252,30 @@ class Pcb(AST):
         }
     }
 
-    def __init__(self, version=1, host=['pykicad', 'x.x.x'], setup=None, nets=[],
-                 modules=[], segments=[], vias=[]):
-        super(Pcb, self).__init__(version=version, host=host, setup=setup,
-                                  nets=nets, modules=modules, segments=segments,
-                                  vias=vias)
+    def __init__(self, version=1, host=['pykicad', 'x.x.x'],
+                 board_thickness=None, board_area=None,
+                 num_nets=None, num_no_connects=None, num_tracks=None,
+                 num_zones=None, num_modules=None, num_drawings=None,
+                 num_links=None, title=None, date=None, rev=None, company=None,
+                 comment1=None, comment2=None, comment3=None, comment4=None,
+                 page_type=None, portrait=False,
+                 setup=None, nets=[], modules=[], segments=[], vias=[]):
+
+        if not isinstance(nets, list):
+            nets = [nets]
+        if not isinstance(modules, list):
+            modules = [modules]
+        if not isinstance(segments, list):
+            segments = [segments]
+        if not isinstance(vias, list):
+            vias = [vias]
+
+        super(Pcb, self).__init__(version=version, host=host,
+                                  board_thickness=board_thickness,
+                                  num_nets=num_nets, num_no_connects=num_no_connects,
+                                  title=title, date=date, rev=rev, company=company,
+                                  comment1=comment1, comment2=comment2,
+                                  comment3=comment3, comment4=comment4,
+                                  page_type=page_type, portrait=portrait,
+                                  setup=setup, nets=nets, modules=modules,
+                                  segments=segments, vias=vias)

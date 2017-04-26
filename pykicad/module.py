@@ -69,6 +69,7 @@ class Net(AST):
 
         super(Net, self).__init__(code=code, name=name)
 
+
 class Drill(AST):
     tag = 'drill'
     schema = {
@@ -253,20 +254,26 @@ class Model(AST):
     tag = 'model'
     schema = {
         '0': {
-            '_attr': 'path',
-            '_parser': text
+            '_parser': text,
+            '_attr': 'path'
         },
         'at': {
-            'xyz': number + number + number,
-            '_attr': 'at'
+            'xyz': {
+                '_parser': number + number + number,
+                '_attr': 'at'
+            }
         },
         'scale': {
-            'xyz': number + number + number,
-            '_attr': 'scale'
+            'xyz': {
+                '_parser': number + number + number,
+                '_attr': 'scale'
+            }
         },
         'rotate': {
-            'xyz': number + number + number,
-            '_attr': 'rotate'
+            'xyz': {
+                '_parser': number + number + number,
+                '_attr': 'rotate'
+            }
         }
     }
 
@@ -278,8 +285,8 @@ class Module(AST):
     tag = 'module'
     schema = {
         '0': {
-            '_attr': 'name',
-            '_parser': text
+            '_parser': text,
+            '_attr': 'name'
         },
         'version': integer,
         'locked': flag('locked'),
