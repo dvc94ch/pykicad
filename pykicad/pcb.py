@@ -370,3 +370,8 @@ class Pcb(AST):
                                   setup=setup, layers=layers, nets=nets,
                                   net_classes=net_classes, modules=modules,
                                   segments=segments, vias=vias)
+
+
+    @classmethod
+    def from_file(cls, path):
+        return Pcb.parse(open(path, encoding='utf-8').read())
