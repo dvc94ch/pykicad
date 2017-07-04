@@ -20,6 +20,27 @@ class Segment(AST):
                                       layer=layer, net=net, tstamp=tstamp,
                                       status=status)
 
+class Line(AST):
+    tag = 'gr_line'
+    schema = {
+        '0': {
+            '_tag': 'start',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number,
+        },
+        'width': number,
+        'layer': text,
+        'tstamp': hex,
+    }
+
+    def __init__(self, start, end, width=None, layer='F.Cu',
+                 tstamp=None):
+        super(Line, self).__init__(start=start, end=end, width=width,
+                                   layer=layer, tstamp=tstamp)
+
 
 class Via(AST):
     tag = 'via'
@@ -337,6 +358,10 @@ class Pcb(AST):
         'vias': {
             '_parser': Via,
             '_multiple': True
+        },
+        'lines': {
+            '_parser': Line,
+            '_multiple': True
         }
     }
 
@@ -348,7 +373,7 @@ class Pcb(AST):
                  comment1=None, comment2=None, comment3=None, comment4=None,
                  page_type=None, portrait=None, setup=None,
                  layers=None, nets=None, net_classes=None, modules=None,
-                 segments=None, vias=None):
+                 segments=None, vias=None, lines=None):
 
         layers = self.init_list(layers, [])
         nets = self.init_list(nets, [])
@@ -356,6 +381,7 @@ class Pcb(AST):
         modules = self.init_list(modules, [])
         segments = self.init_list(segments, [])
         vias = self.init_list(vias, [])
+        lines = self.init_list(lines, [])
 
         super(Pcb, self).__init__(version=version, host=host,
                                   board_thickness=board_thickness,
@@ -366,7 +392,7 @@ class Pcb(AST):
                                   page_type=page_type, portrait=portrait,
                                   setup=setup, layers=layers, nets=nets,
                                   net_classes=net_classes, modules=modules,
-                                  segments=segments, vias=vias)
+                                  segments=segments, vias=vias, lines=lines)
 
     def module_by_reference(self, name):
         '''Returns a module called name.'''
