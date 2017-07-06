@@ -334,7 +334,10 @@ class Module(AST):
             '_parser': Pad,
             '_multiple': True
         },
-        'model': Model
+        'model': {
+            '_parser': Model,
+            '_multiple': True
+        }
     }
 
     def __init__(self, name, version=None, locked=False, placed=False,

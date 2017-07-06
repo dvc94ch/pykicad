@@ -130,7 +130,7 @@ class ASTTests(unittest.TestCase):
                 '_parser': number,
             }
         })
-        ast = AST.parse('(sexpr (drill 1) (pad 1) (drill 2) (drill 3))')
+        ast = AST.parse('(sexpr (pad 1) (drill 1) (drill 2) (drill 3))')
         assert ast.pad == 1.0
         assert ast.drills[0].size == 1.0
         assert ast.drills[1].size == 2.0

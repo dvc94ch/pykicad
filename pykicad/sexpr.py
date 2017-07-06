@@ -59,22 +59,19 @@ def ast_parse_action(attr, ast):
     return action
 
 
-def sexpr(name, positional=None, children=None):
+def reduce_parser_list(parsers, func):
+    if isinstance(parsers, list) and len(parsers) > 0:
+        return reduce(func, parsers)
+    return Empty()
+
+def sexpr(name, positional=None, single=None, multiple=None):
     if isinstance(positional, ParserElement):
         parser = positional
     else:
-        if isinstance(positional, list):
-            if len(positional) > 0:
-                parser = reduce(lambda x, y: x + y, positional)
-            else:
-                parser = None
-        if isinstance(children, list):
-            if len(children) > 0:
-                children = reduce(lambda x, y: x & y, children)
-                if parser is None:
-                    parser = children
-                else:
-                    parser += children
+        positional = reduce_parser_list(positional, lambda x, y: x + y)
+        single = reduce_parser_list(single, lambda x, y: x & y)
+        multiple = reduce_parser_list(multiple, lambda x, y: x & y)
+        parser = positional + single + multiple
 
     name = Empty() if name == '' else Suppress(name)
     return Suppress('(') + name + parser + Suppress(')')
@@ -166,15 +163,21 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
         # Determine the rest of the arguments. Here the position doesn't matter
         # within the sexpr. These default to being optional.
-        children = []
+        single = []
+        multiple = []
         for key, value in schema.items():
             # A key is either a number representing a positional argument a
             # special key starting with an underscore or a subschema.
             if not (key.isdigit() or key[0] == '_'):
+                # Tags that have _multiple set need to go after those that don't
+                if isinstance(value, dict) and '_multiple' in value:
+                    children = multiple
+                else:
+                    children = single
                 children.append(generate_parser(tag=key, schema=value,
                                                 attr=None, optional=True))
 
-        parser = sexpr(tag, positional, children)
+        parser = sexpr(tag, positional, single, multiple)
 
     if schema.get('_multiple', False):
         parser = ZeroOrMore(parser)
@@ -294,17 +297,18 @@ def tree_to_string(tree, level=0):
         pos.append(tree_to_string(tree[str(i)], level))
         i += 1
 
-    children = []
+    single = []
+    multiple = []
     for key, value in tree.items():
         if len(key) > 0 and key[0] == '_':
             if not value == '':
-                children.append(value)
+                multiple.append(value)
         elif not key.isdigit():
             value = tree_to_string(value, level + 1)
             if not value == '':
-                children.append('\n%s(%s %s)' % (level * '    ', key, value))
+                single.append('\n%s(%s %s)' % (level * '    ', key, value))
 
-    return ' '.join(pos + children)
+    return ' '.join(pos + single + multiple)
 
 
 def merge_dict(d1, d2):
