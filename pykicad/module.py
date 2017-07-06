@@ -124,10 +124,12 @@ class Pad(AST):
 
     def __init__(self, name, type='smd', shape='rect', size=None, at=None,
                  rect_delta=None, roundrect_rratio=None, drill=None,
-                 layers=['F.Cu'], net=None, die_length=None, solder_mask_margin=None,
+                 layers=None, net=None, die_length=None, solder_mask_margin=None,
                  solder_paste_margin=None, solder_paste_margin_ratio=None,
                  clearance=None, zone_connect=None):
 
+        at = self.init_list(at, [0, 0])
+        layers = self.init_list(layers, ['F.Cu'])
 
         super(Pad, self).__init__(name=name, type=type, shape=shape, size=size,
                                   at=at, rect_delta=rect_delta,
@@ -336,25 +338,23 @@ class Module(AST):
     }
 
     def __init__(self, name, version=None, locked=False, placed=False,
-                 layer='F.Cu', tedit=None, tstamp=None, at=[0, 0],
+                 layer='F.Cu', tedit=None, tstamp=None, at=None,
                  descr=None, tags=None, path=None, attr=None,
                  autoplace_cost90=None, autoplace_cost180=None,
                  solder_mask_margin=None, solder_paste_margin=None,
                  solder_paste_ratio=None, clearance=None,
                  zone_connect=None, thermal_width=None, thermal_gap=None,
-                 texts=[], lines=[], circles=[], arcs=[], curves=[], polygons=[],
-                 pads=[], model=None):
+                 texts=None, lines=None, circles=None, arcs=None, curves=None,
+                 polygons=None, pads=None, model=None):
 
-        if not isinstance(pads, list):
-            pads = [pads]
-        if not isinstance(lines, list):
-            lines = [lines]
-        if not isinstance(texts, list):
-            texts = [texts]
-        if not isinstance(circles, list):
-            circles = [circles]
-        if not isinstance(arcs, list):
-            arcs = [arcs]
+        at = self.init_list(at, [0, 0])
+        pads = self.init_list(pads, [])
+        texts = self.init_list(texts, [])
+        lines = self.init_list(lines, [])
+        circles = self.init_list(circles, [])
+        arcs = self.init_list(arcs, [])
+        curves = self.init_list(curves, [])
+        polygons = self.init_list(polygons, [])
 
         super(Module, self).__init__(name=name, version=version, locked=locked,
                                      placed=placed, layer=layer, tedit=tedit,

@@ -371,6 +371,17 @@ class AST(object):
 
         return tree_to_string(tree)
 
+    def init_list(self, arg, default):
+        '''Helper to initialize lists. Since default arguments are initialized
+        at import time and lists are reference types, all lists of all instances
+        point to the same list.'''
+
+        if arg is None:
+            return default
+        if not isinstance(arg, list):
+            return [arg]
+        return arg
+
     @classmethod
     def parser(cls):
         return generate_parser(cls.tag, cls.schema)
