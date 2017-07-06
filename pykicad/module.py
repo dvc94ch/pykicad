@@ -1,5 +1,6 @@
 import os
 import os.path
+import re
 import sys
 from io import open
 from pykicad.sexpr import *
@@ -39,6 +40,9 @@ def list_modules(library):
             modules.append('.'.join(file.split('.')[0:-1]))
     return modules
 
+def filter_by_regex(alist, regex):
+    regex = re.compile(regex)
+    return [x for x in alist if regex.match(x)]
 
 def list_all_modules():
     modules = []
