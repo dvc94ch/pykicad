@@ -35,8 +35,11 @@ class Via(AST):
         'status': hex
     }
 
-    def __init__(self, at, size, drill, net, micro=False, blind=False, layers=['F.Cu', 'B.Cu'],
+    def __init__(self, at, size, drill, net, micro=False, blind=False, layers=None,
                  tstamp=None, status=None):
+
+        layers = self.init_list(layers, ['F.Cu', 'B.Cu'])
+
         super(Via, self).__init__(micro=micro, blind=blind, at=at, size=size,
                                   drill=drill, layers=layers, net=net,
                                   tstamp=tstamp, status=status)
@@ -104,10 +107,9 @@ class NetClass(AST):
 
     def __init__(self, name, description='', clearance=None, trace_width=None,
                  via_dia=None, via_drill=None, uvia_dia=None, uvia_drill=None,
-                 diff_pair_width=None, diff_pair_gap=None, nets=[]):
+                 diff_pair_width=None, diff_pair_gap=None, nets=None):
 
-        if not isinstance(nets, list):
-            nets = [nets]
+        nets = self.init_list(nets, [])
 
         super(NetClass, self).__init__(name=name, description=description,
                                        clearance=clearance, trace_width=trace_width,
@@ -345,20 +347,15 @@ class Pcb(AST):
                  num_links=None, title=None, date=None, rev=None, company=None,
                  comment1=None, comment2=None, comment3=None, comment4=None,
                  page_type=None, portrait=None, setup=None,
-                 layers=[], nets=[], net_classes=[], modules=[], segments=[], vias=[]):
+                 layers=None, nets=None, net_classes=None, modules=None,
+                 segments=None, vias=None):
 
-        if not isinstance(layers, list):
-            layers = [layers]
-        if not isinstance(nets, list):
-            nets = [nets]
-        if not isinstance(net_classes, list):
-            net_classes = [net_classes]
-        if not isinstance(modules, list):
-            modules = [modules]
-        if not isinstance(segments, list):
-            segments = [segments]
-        if not isinstance(vias, list):
-            vias = [vias]
+        layers = self.init_list(layers, [])
+        nets = self.init_list(nets, [])
+        net_classes = self.init_list(net_classes, [])
+        modules = self.init_list(modules, [])
+        segments = self.init_list(segments, [])
+        vias = self.init_list(vias, [])
 
         super(Pcb, self).__init__(version=version, host=host,
                                   board_thickness=board_thickness,
