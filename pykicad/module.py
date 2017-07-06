@@ -154,6 +154,14 @@ class Pad(AST):
 
         return True
 
+    def rotate(self, angle):
+        '''Rotates a pad by an angle.'''
+
+        if len(self.at) > 2:
+            self.at[2] += angle
+        else:
+            self.at.append(angle)
+
 
 class Text(AST):
     tag = 'fp_text'
@@ -191,6 +199,14 @@ class Text(AST):
         super(Text, self).__init__(type=type, text=text, at=at, layer=layer,
                                    size=size, thickness=thickness, bold=bold,
                                    italic=italic, justify=justify, hide=hide)
+
+    def rotate(self, angle):
+        '''Rotates a textual element by an angle.'''
+
+        if len(self.at) > 2:
+            self.at[2] += angle
+        else:
+            self.at.append(angle)
 
 
 class Line(AST):
@@ -374,6 +390,77 @@ class Module(AST):
                                      arcs=arcs, curves=curves, polygons=polygons,
                                      pads=pads, model=model)
 
+    def pads_by_name(self, name):
+        '''Returns a list of pads.
+        The pads in the list may be in an arbitrary order, or be
+        non-consecutive. Multiple pads can have the same name.'''
+
+        pads = []
+        for pad in self.pads:
+            if pad.name == name:
+                pads.append(pad)
+        return pads
+
+    def set_reference(self, name):
+        '''Change the reference/identifier of a module.
+        Aside from changing the name, we also need to update the
+        textual elements of type 'reference'.'''
+
+        self.name = name
+        for text in self.texts:
+            if text.type == 'reference':
+                text.text = name
+
+    def set_value(self, value):
+        '''Change the value of a module.
+        Updates all textual elements of type 'value'.'''
+
+        for text in self.texts:
+            if text.type == 'value':
+                text.text = value
+
+    def elements_by_layer(layer):
+        '''Returns a list of elements on layer.'''
+
+        elements = []
+        for element_list in [self.lines, self.circles, self.arcs,
+                         self.curves, self.polygons]:
+            for elem in element_list:
+                if elem.layer == layer:
+                    elements.append(elem)
+        return elements
+
+    def courtyard(self):
+        '''Returns the courtyard elements of a module.'''
+
+        return self.elements_by_layer(module.layer.split('.')[0] + '.CrtYd')
+
+    def place(self, x, y):
+        '''Sets the x and y coordinates of the module.'''
+
+        self.at[0] = x
+        self.at[1] = y
+
+    def rotate(self, angle):
+        '''Rotates the module by an angle.
+        Also applies rotation to all text elements and pads.'''
+
+        if len(self.at) > 2:
+            self.at[2] += angle
+        else:
+            self.at.append(angle)
+
+        for pad in self.pads:
+            pad.rotate(angle)
+
+        for text in self.texts:
+            text.rotate(angle)
+
+    def connect(self, pad, net):
+        '''Sets the net on all pads called :data:pad.'''
+
+        for pad in self.pads_by_name(pad):
+            pad.net = net
 
     @classmethod
     def from_file(cls, path):

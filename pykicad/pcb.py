@@ -371,6 +371,19 @@ class Pcb(AST):
                                   net_classes=net_classes, modules=modules,
                                   segments=segments, vias=vias)
 
+    def module_by_reference(self, name):
+        '''Returns a module called name.'''
+
+        for module in self.modules:
+            if module.name == name:
+                return module
+
+    def net_by_code(self, code):
+        '''Returns a net with code.'''
+
+        for net in self.nets:
+            if net.code == code:
+                return net
 
     @classmethod
     def from_file(cls, path):
