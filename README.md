@@ -14,7 +14,6 @@ stuff.
 from numpy import array
 from pykicad.pcb import *
 from pykicad.module import *
-from pykicad.boundarybox import *
 
 # Define nets
 vi, vo, gnd = Net('VI'), Net('VO'), Net('GND')
@@ -29,27 +28,49 @@ r1.pads[1].net = vo
 r2.pads[0].net = vo
 r2.pads[1].net = gnd
 
-# Space components
-r2.at = [module_boundary(r1).size[0] + 0.5, 0]
+# Place components
+r1.at = [0, 0]
+r2.at = [5, 0]
 
-
-# Draw segments
+# Compute positions
 start = array(r1.pads[1].at) + array(r1.at)
 end = array(r2.pads[0].at) + array(r2.at)
-
-s1 = Segment(start=start.tolist(), end=end.tolist(), net=vo.code)
-
-
-# Insert via
 pos = start + (end - start) / 2
-v1 = Via(at=pos.tolist(), size=.3, drill=Drill(.2), net=vo.code)
 
+# Create vias
+v1 = Via(at=pos.tolist(), size=.8, drill=.6, net=vo.code)
+
+# Create segments
+s1 = Segment(start=start.tolist(), end=pos.tolist(), net=vo.code)
+s2 = Segment(start=pos.tolist(), end=end.tolist(), net=vo.code)
+
+
+layers = [
+    Layer('F.Cu'),
+    Layer('Inner1.Cu'),
+    Layer('Inner2.Cu'),
+    Layer('B.Cu'),
+    Layer('Edge.Cuts', type='user')
+]
+
+for layer in ['Mask', 'Paste', 'SilkS', 'CrtYd', 'Fab']:
+    for side in ['B', 'F']:
+        layers.append(Layer('%s.%s' % (side, layer), type='user'))
+
+nc1 = NetClass('default', trace_width=1, nets=['VI', 'VO', 'GND'])
 
 # Create PCB
 pcb = Pcb()
+pcb.title = 'A title'
+pcb.comment1 = 'Comment 1'
+pcb.page_type = [20, 20]
+pcb.num_nets = 5
+pcb.setup = Setup(grid_origin=[10, 10])
+pcb.layers = layers
 pcb.modules += [r1, r2]
+pcb.net_classes += [nc1]
 pcb.nets += [vi, vo, gnd]
-pcb.segments += [s1]
+pcb.segments += [s1, s2]
 pcb.vias += [v1]
 
 
@@ -67,15 +88,62 @@ with open('project.kicad_pcb', 'w+') as f:
 # API docs
 ## modules.py
 ### Classes
-* Module(name, descr, tags, layer, pads, texts, lines, circles, arcs, model)
-* Pad(name, type, shape, drill, at, size, rect_delta, layers)
+* Module(name, version, locked, placed, layer, tedit, tstamp, at, descr, tags,
+         path, attr, autoplace_cost90, autoplace_cost180, solder_mask_margin,
+         solder_paste_margin, solder_paste_ratio, clearance, zone_connect,
+         thermal_width, thermal_gap, texts, lines, circles, arcs, curves,
+         polygons, pads, models)
+  * pads_by_name(name)
+  * set_reference(name)
+  * set_value(value)
+  * geometry()
+  * elements_by_layer(layer)
+  * courtyard()
+  * place(x, y)
+  * rotate(angle)
+  * connect(pad, net)
+  * flip()
+  * from_file(cls, path)
+  * from_library(cls, lib, name)
+* Pad(name, type, shape, size, at, rect_delta, roundrect_rratio, drill, layers,
+      net, die_length, solder_mask_margin, solder_paste_margin, solder_paste_margin_ratio,
+      clearance, zone_connect)
+  * rotate(angle)
+  * flip()
 * Drill(size, offset)
 * Net(code, name)
 * Model(path, at, scale, rotate)
-* Text(prop, value, at, layer, hide, size, thickness)
+* Text(type, text, at, layer, size, thickness, bold, italic, justify, hide)
+  * rotate(angle)
+  * flip()
 * Line(start, end, layer, width)
+  * flip()
 * Circle(center, end, layer, width)
+  * flip()
 * Arc(start, end, angle, layer, width)
+  * flip()
+
+## pcb.py
+### Classes
+* Pcb(version, host, board_thickness, num_nets, num_no_connects, title, date, rev,
+      company, comment1, comment2, comment3, comment4, page_type, portrait,
+      setup, layers, nets, net_classes, modules, segments, vias, lines)
+  * module_by_reference(name)
+  * net_by_code(code)
+  * from_file(cls, path)
+* Segment(start, end, net, width, layer, tstamp, status)
+* Line(start, end, width, layer, tstamp)
+* Via(micro, blind, at, size, drill, layers, net, tstamp, status)
+* Layer(code, name, type, hide)
+* NetClass(name, description, clearance, trace_width, via_dia, via_drill,
+           uvia_dia, uvia_drill, diff_pair_width, diff_pair_gap, nets)
+* Setup(user_trace_width, trace_clearance, zone_clearance, zone_45_only,
+        trace_min, segment_width, edge_width, via_size, uvia_size,
+        uvia_drill, uvias_allowed, blind_buried_vias_allowed, uvia_min_size,
+        uvai_min_drill, pcb_text_width, pcb_text_size, mod_edge_width,
+        mod_text_size, mod_text_width, pad_size, pad_drill, pad_to_mask_clearance,
+        solder_mask_min_width, pad_to_paste_clearance, solder_to_paste_clearance_ratio,
+        grid_origin, visible_elements, pcbplotparams)
 
 ### Functions
 * find_library(library)
@@ -83,6 +151,8 @@ with open('project.kicad_pcb', 'w+') as f:
 * list_libraries()
 * list_modules(library)
 * list_all_modules()
+* filter_by_regex()
+* flip_layer()
 
 ### Global variables
 * MODULE_SEARCH_PATH
