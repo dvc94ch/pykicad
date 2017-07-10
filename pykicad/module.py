@@ -460,21 +460,23 @@ class Module(AST):
             if text.type == 'value':
                 text.text = value
 
-    def elements_by_layer(layer):
-        '''Returns a list of elements on layer.'''
-
-        elements = []
+    def geometry(self):
         for element_list in [self.lines, self.circles, self.arcs,
-                         self.curves, self.polygons]:
+                             self.curves, self.polygons]:
             for elem in element_list:
-                if elem.layer == layer:
-                    elements.append(elem)
-        return elements
+                yield elem
+
+    def elements_by_layer(self, layer):
+        '''Returns a iterator of elements on layer.'''
+
+        for elem in self.geometry():
+            if elem.layer == layer:
+                yield elem
 
     def courtyard(self):
         '''Returns the courtyard elements of a module.'''
 
-        return self.elements_by_layer(module.layer.split('.')[0] + '.CrtYd')
+        return list(self.elements_by_layer(self.layer.split('.')[0] + '.CrtYd'))
 
     def place(self, x, y):
         '''Sets the x and y coordinates of the module.'''
