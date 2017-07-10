@@ -358,6 +358,9 @@ class Module(AST):
         'descr': text,
         'tags': text,
         'path': text,
+        # default: Add module to BOM
+        # smd: Add module to BOM and SMT placement file
+        # virtual: Don't add module to BOM
         'attr': Literal('smd') | 'virtual',
         'autoplace_cost90': integer,
         'autoplace_cost180': integer,
