@@ -51,6 +51,12 @@ def list_all_modules():
     return modules
 
 
+def flip_layer(layer):
+    side, layer = layer.split('.')
+    side = 'B' if side == 'F' else 'B'
+    return side + '.' + layer
+
+
 ### AST
 class Net(AST):
     tag = 'net'
@@ -162,6 +168,13 @@ class Pad(AST):
         else:
             self.at.append(angle)
 
+    def flip(self):
+        '''Flip a pad.'''
+
+        self.layers = [flip_layer(layer) for layer in self.layers]
+        self.at[1] = -self.at[1]
+        if len(self.at) > 2:
+            self.at[2] = -self.at[2]
 
 class Text(AST):
     tag = 'fp_text'
@@ -208,6 +221,13 @@ class Text(AST):
         else:
             self.at.append(angle)
 
+    def flip(self):
+        '''Flip a textual element.'''
+
+        self.layer = flip_layer(self.layer)
+        self.at[1] = -self.at[1]
+        self.justify = 'mirror' if not self.justify == 'mirror' else None
+
 
 class Line(AST):
     tag = 'fp_line'
@@ -226,6 +246,13 @@ class Line(AST):
 
     def __init__(self, start, end, layer='F.SilkS', width=None):
         super(Line, self).__init__(start=start, end=end, layer=layer, width=width)
+
+    def flip(self):
+        '''Flip a line.'''
+
+        self.layer = flip_layer(self.layer)
+        self.start[1] = -self.start[1]
+        self.end[1] = -self.end[1]
 
 
 class Circle(AST):
@@ -246,6 +273,11 @@ class Circle(AST):
     def __init__(self, center, end, layer='F.SilkS', width=None):
         super(Circle, self).__init__(center=center, end=end, layer=layer,
                                      width=width)
+
+    def flip(self):
+        '''Flip a circle.'''
+
+        self.layer = flip_layer(self.layer)
 
 
 class Arc(AST):
@@ -270,6 +302,12 @@ class Arc(AST):
     def __init__(self, start, end, angle, layer='F.SilkS', width=None):
         super(Arc, self).__init__(start=start, end=end, angle=angle,
                                   layer=layer, width=width)
+
+    def flip(self):
+        '''Flip an arc.'''
+
+        self.layer = flip_layer(self.layer)
+        raise NotImplementedError()
 
 
 class Model(AST):
@@ -461,6 +499,15 @@ class Module(AST):
 
         for pad in self.pads_by_name(pad):
             pad.net = net
+
+    def flip(self):
+        self.layer = flip_layer(self.layer)
+        for pad in self.pads:
+            pad.flip()
+        for text in self.texts:
+            text.flip()
+        for elem in self.geometry():
+            elem.flip()
 
     @classmethod
     def from_file(cls, path):
