@@ -113,30 +113,50 @@ with open('project.kicad_pcb', 'w+') as f:
 * Drill(size, offset)
 * Net(code, name)
 * Model(path, at, scale, rotate)
-* Text(type, text, at, layer, size, thickness, bold, italic, justify, hide)
+* Text(type, text, at, layer, size, thickness, bold, italic, justify, hide, tstamp)
   * rotate(angle)
   * flip()
-* Line(start, end, layer, width)
+* Line(start, end, layer, width, tstamp, status)
   * flip()
-* Circle(center, end, layer, width)
+* Circle(center, end, layer, width, tstamp, status)
   * flip()
-* Arc(start, end, angle, layer, width)
+* Arc(start, end, angle, layer, width, tstamp, status)
+  * flip()
+* Polygon(pts, layer, width, tstamp, status)
+  * flip()
+* Curve(start, bezier1, bezier2, end, layer, width, tstamp, status)
   * flip()
 
 ## pcb.py
 ### Classes
 * Pcb(version, host, board_thickness, num_nets, num_no_connects, title, date, rev,
       company, comment1, comment2, comment3, comment4, page_type, portrait,
-      setup, layers, nets, net_classes, modules, segments, vias, lines)
+      setup, layers, nets, net_classes, modules, segments, vias, texts, lines,
+      arcs, circles, polygons, curves, zones, targets, dimensions)
+  * geometry()
+  * elements_by_layer(layer)
+  * outline()
   * module_by_reference(name)
   * net_by_code(code)
   * from_file(cls, path)
 * Segment(start, end, net, width, layer, tstamp, status)
-* Line(start, end, width, layer, tstamp)
+* Text(text, at, layer, size, thickness, bold, italic, justify, hide, tstamp)
+* Line(start, end, width, layer, tstamp, status)
+* Arc(start, end, angle, layer, width)
+* Circle(center, end, layer, width, tstamp, status)
+* Polygon(pts, layer, width, tstamp, status)
+* Curve(start, bezier1, bezier2, end, layer, width, tstamp, status)
 * Via(micro, blind, at, size, drill, layers, net, tstamp, status)
 * Layer(code, name, type, hide)
 * NetClass(name, description, clearance, trace_width, via_dia, via_drill,
            uvia_dia, uvia_drill, diff_pair_width, diff_pair_gap, nets)
+* Zone(net, net_name, layer, tstamp, hatch_type, hatch_size, priority,
+       connect_pads, clearance, min_thickness, fill, fill_mode, arc_segments,
+       thermal_gap, thermal_bridge_width, smoothing, radius, keepout_tracks,
+       keepout_vias, keepout_copperpour, polygon, filled_polygon, fill_segments)
+* Target(shape, at, size, width, layer, tstamp)
+* Dimension(value, width, layer, text, feature1, feature2, crossbar, arrow1a,
+            arrow1b, arrow2a, arrow2b, tstamp)
 * Setup(user_trace_width, trace_clearance, zone_clearance, zone_45_only,
         trace_min, segment_width, edge_width, via_size, uvia_size,
         uvia_drill, uvias_allowed, blind_buried_vias_allowed, uvia_min_size,
