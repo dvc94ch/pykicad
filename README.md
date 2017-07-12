@@ -8,6 +8,10 @@ The aim of this project is to provide high quality and well tested
 format support so that other projects can focus on the interesting
 stuff.
 
+## Status
+Complete support for the kicad_pcb and kicad_mod formats.  The schemas of the
+classes should provide good documentation on the kicad file format.  A summary
+of all methods and fields can be found in the section API docs.
 
 ## Usage
 ```python
@@ -74,8 +78,7 @@ pcb.segments += [s1, s2]
 pcb.vias += [v1]
 
 
-with open('project.kicad_pcb', 'w+') as f:
-    f.write(str(pcb))
+pcb.to_file('project')
 ```
 
 
@@ -138,6 +141,7 @@ with open('project.kicad_pcb', 'w+') as f:
   * outline()
   * module_by_reference(name)
   * net_by_code(code)
+  * to_file(path)
   * from_file(cls, path)
 * Segment(start, end, net, width, layer, tstamp, status)
 * Text(text, at, layer, size, thickness, bold, italic, justify, hide, tstamp)
