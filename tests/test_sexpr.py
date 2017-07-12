@@ -229,13 +229,15 @@ class ASTTests(unittest.TestCase):
         ast = AST.parse('(sexpr (a (b (c 1))))')
         assert ast.d == 1
 
-    #def test_positional_nested(self):
-    #    AST.from_schema('sexpr', {
-    #        '0': {
-    #            'a': number
-    #        },
-    #        '1': {
-    #            'b': number
-    #        }
-    #    })
-    #    ast = AST.parse('(sexpr (a 1) (b 2))')
+    def test_positional_nested(self):
+        AST.from_schema('sexpr', {
+            '0': {
+                'a': number
+            },
+            '1': {
+                'b': number
+            }
+        })
+        ast = AST.parse('(sexpr (a 1) (b 2))')
+        assert ast.a == 1
+        assert ast.b == 2

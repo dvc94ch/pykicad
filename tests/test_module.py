@@ -112,9 +112,9 @@ class ModelTests(unittest.TestCase):
             '    (scale (xyz 0 0 0))'
             '    (rotate (xyz 0 0 0)))')
         model = Model.parse(model_string)
-        assert model.at == [0, 0, 0]
-        assert model.scale == [0, 0, 0]
-        assert model.rotate == [0, 0, 0]
+        assert model.at == (0, 0, 0)
+        assert model.scale == (0, 0, 0)
+        assert model.rotate == (0, 0, 0)
         assert Model.parse(model.to_string()) == model
 
 

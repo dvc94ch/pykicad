@@ -418,19 +418,19 @@ class Model(AST):
         },
         'at': {
             'xyz': {
-                '_parser': number + number + number,
+                '_parser': tuple_parser(3),
                 '_attr': 'at'
             }
         },
         'scale': {
             'xyz': {
-                '_parser': number + number + number,
+                '_parser': tuple_parser(3),
                 '_attr': 'scale'
             }
         },
         'rotate': {
             'xyz': {
-                '_parser': number + number + number,
+                '_parser': tuple_parser(3),
                 '_attr': 'rotate'
             }
         }
@@ -460,7 +460,7 @@ class Module(AST):
         # default: Add module to BOM
         # smd: Add module to BOM and SMT placement file
         # virtual: Don't add module to BOM
-        'attr': Literal('smd') | 'virtual',
+        'attr': Optional('smd') + Optional('virtual'),
         'autoplace_cost90': integer,
         'autoplace_cost180': integer,
         'solder_mask_margin': number,

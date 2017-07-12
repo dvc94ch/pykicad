@@ -3,8 +3,6 @@ from functools import reduce
 
 
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
-yes_no = Literal('yes') | 'no'
-boolean = Literal('true') | 'false'
 number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
 integer = Word(nums)
 hex = Word(hexnums)
@@ -12,8 +10,36 @@ hex = Word(hexnums)
 dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
-yes_no.setParseAction(lambda tokens: True if tokens[0] == 'yes' else False)
-boolean.setParseAction(lambda tokens: True if tokens[0] == 'true' else False)
+
+def boolean_schema(attr, true, false):
+    return {
+        '0': {
+            '_attr': attr,
+            '_parser': (Literal(true) | false) \
+                        .setParseAction(lambda toks: True if toks[0] == true else False),
+            '_printer': lambda b: true if b else false
+        }
+    }
+
+def boolean(attr):
+    return boolean_schema(attr, 'true', 'false')
+
+def yes_no(attr):
+    return boolean_schema(attr, 'yes', 'no')
+
+def allowed(attr):
+    return boolean_schema(attr, 'allowed', 'not_allowed')
+
+def tuple_parser(i, parser=number):
+    tparser = Empty()
+    for j in range(i):
+        tparser += parser
+    tparser.setParseAction(lambda t: tuple(t))
+    return tparser
+
+def extend_schema(schema, **kwargs):
+    schema.update(kwargs)
+    return schema
 
 
 # Python 2 compatibility
@@ -38,7 +64,7 @@ def parse_action(tokens):
     if isinstance(tokens[0], dict):
         res = {}
         for token in tokens:
-            res.update(token)
+            merge_dict(res, token)
         return res
     return list(tokens)
 
@@ -72,6 +98,9 @@ def sexpr(name, positional=None, single=None, multiple=None):
         single = reduce_parser_list(single, lambda x, y: x & y)
         multiple = reduce_parser_list(multiple, lambda x, y: x & y)
         parser = positional + single + multiple
+
+    if name == False:
+        return parser
 
     name = Empty() if name == '' else Suppress(name)
     return Suppress('(') + name + parser + Suppress(')')
@@ -277,10 +306,9 @@ def tree_to_string(tree, level=0):
             return '"%s"' % tree
         return tree
     if isinstance(tree, tuple):
-        a, b = tree
-        return b
-    if isinstance(tree, bool):
-        return 'yes' if tree else 'no'
+        if tree[0] == '_':
+            return tree[1]
+        return ' '.join(map(tree_to_string, tree))
     if isinstance(tree, float):
         return '%.10f' % tree
     if isinstance(tree, int):
@@ -312,11 +340,14 @@ def tree_to_string(tree, level=0):
 
 
 def merge_dict(d1, d2):
-    """Assume that if there is a key conflict, there is a nested dict."""
-
     for key, value in d2.items():
         if key in d1:
-            merge_dict(d1[key], value)
+            if isinstance(d1[key], dict):
+                merge_dict(d1[key], value)
+            else:
+                if not isinstance(d1[key], list):
+                    d1[key] = [d1[key]]
+                d1[key].append(value)
         else:
             d1[key] = value
 
