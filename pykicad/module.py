@@ -58,6 +58,18 @@ def flip_layer(layer):
 
 
 ### AST
+def xy_schema(attr):
+    return {
+        '0': {
+            '_attr': attr,
+            '_parser': (Suppress('(xy') + number + number + Suppress(')')) \
+                        .setParseAction(lambda xy: tuple(xy)),
+            '_printer': lambda xy: '(xy %f %f)' % (xy[0], xy[1]),
+            '_multiple': True
+        }
+    }
+
+
 class Net(AST):
     tag = 'net'
     schema = {
@@ -176,6 +188,7 @@ class Pad(AST):
         if len(self.at) > 2:
             self.at[2] = -self.at[2]
 
+
 class Text(AST):
     tag = 'fp_text'
     schema = {
@@ -202,16 +215,18 @@ class Text(AST):
             'justify': Literal('left') | 'right' | 'top' | 'bottom' | 'mirror',
             'hide': flag('hide')
         },
-        'hide': flag('hide')
+        'hide': flag('hide'),
+        'tstamp': hex
     }
 
     def __init__(self, type='user', text='**', at=None, layer='F.SilkS',
                  size=None, thickness=None, bold=False, italic=False,
-                 justify=None, hide=False):
+                 justify=None, hide=False, tstamp=None):
 
         super(Text, self).__init__(type=type, text=text, at=at, layer=layer,
                                    size=size, thickness=thickness, bold=bold,
-                                   italic=italic, justify=justify, hide=hide)
+                                   italic=italic, justify=justify, hide=hide,
+                                   tstamp=tstamp)
 
     def rotate(self, angle):
         '''Rotates a textual element by an angle.'''
@@ -241,11 +256,15 @@ class Line(AST):
             '_parser': number + number
         },
         'layer': text,
-        'width': number
+        'width': number,
+        'tstamp': hex,
+        'status': hex
     }
 
-    def __init__(self, start, end, layer='F.SilkS', width=None):
-        super(Line, self).__init__(start=start, end=end, layer=layer, width=width)
+    def __init__(self, start, end, layer='F.SilkS', width=None, tstamp=None,
+                 status=None):
+        super(Line, self).__init__(start=start, end=end, layer=layer,
+                                   width=width, tstamp=tstamp, status=status)
 
     def flip(self):
         '''Flip a line.'''
@@ -267,12 +286,15 @@ class Circle(AST):
             '_parser': number + number
         },
         'layer': text,
-        'width': number
+        'width': number,
+        'tstamp': hex,
+        'status': hex
     }
 
-    def __init__(self, center, end, layer='F.SilkS', width=None):
+    def __init__(self, center, end, layer='F.SilkS', width=None, tstamp=None,
+                 status=None):
         super(Circle, self).__init__(center=center, end=end, layer=layer,
-                                     width=width)
+                                     width=width, tstamp=tstamp, status=status)
 
     def flip(self):
         '''Flip a circle.'''
@@ -296,15 +318,92 @@ class Arc(AST):
             '_parser': number
         },
         'layer': text,
-        'width': number
+        'width': number,
+        'tstamp': hex,
+        'status': hex
     }
 
-    def __init__(self, start, end, angle, layer='F.SilkS', width=None):
+    def __init__(self, start, end, angle, layer='F.SilkS', width=None,
+                 tstamp=None, status=None):
         super(Arc, self).__init__(start=start, end=end, angle=angle,
-                                  layer=layer, width=width)
+                                  layer=layer, width=width, tstamp=tstamp,
+                                  status=status)
 
     def flip(self):
         '''Flip an arc.'''
+
+        self.layer = flip_layer(self.layer)
+        raise NotImplementedError()
+
+
+class Polygon(AST):
+    tag = 'fp_poly'
+    schema = {
+        '0': {
+            'pts': xy_schema('pts'),
+        },
+        'layer': text,
+        'width': number,
+        'tstamp': hex,
+        'status': hex
+    }
+
+    def __init__(self, pts, layer='F.SilkS', width=None, tstamp=None, status=None):
+        super(Polygon, self).__init__(pts=pts, layer=layer, width=width,
+                                      tstamp=tstamp, status=status)
+
+    def flip(self):
+        '''Flip polygon.'''
+
+        self.layer = flip_layer(self.layer)
+        raise NotImplementedError()
+
+
+class Curve(AST):
+    tag = 'fp_curve'
+    schema = {
+        '0': {
+            'pts': {
+                '0': {
+                    'xy': {
+                        '_attr': 'start',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '1': {
+                    'xy': {
+                        '_attr': 'bezier1',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '2': {
+                    'xy': {
+                        '_attr': 'bezier2',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '3': {
+                    'xy': {
+                        '_attr': 'end',
+                        '_parser': tuple_parser(2)
+                    }
+                }
+            },
+            'layer': text,
+            'width': number,
+            'tstamp': hex,
+            'status': hex
+        }
+    }
+
+    def __init__(self, start, bezier1, bezier2, end, layer='F.SilkS',
+                 width=None, tstamp=None, status=None):
+        super(Curve, self).__init__(start=start, bezier1=bezier1,
+                                    bezier2=bezier2, end=end, layer=layer,
+                                    width=width, tstamp=tstamp, status=status)
+
+    def flip(self):
+        '''Flip curve.'''
 
         self.layer = flip_layer(self.layer)
         raise NotImplementedError()

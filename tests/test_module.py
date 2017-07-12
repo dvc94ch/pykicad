@@ -87,6 +87,23 @@ class LineTests(unittest.TestCase):
         assert Line.parse(line.to_string()) == line
 
 
+class PolygonTests(unittest.TestCase):
+    def test_polygon(self):
+        poly = Polygon.parse('(fp_poly (pts (xy 0 0) (xy 1 0)) (width 0.01))')
+        assert poly.pts == [(0, 0), (1, 0)]
+        assert poly.width == 0.01
+        assert Polygon.parse(poly.to_string()) == poly
+
+
+class CurveTests(unittest.TestCase):
+    def test_curve(self):
+        curve = Curve.parse('(fp_curve (pts (xy 0 0) (xy 1 1) (xy 2 2) (xy 3 3)))')
+        assert curve.start == (0, 0)
+        assert curve.bezier1 == (1, 1)
+        assert curve.bezier2 == (2, 2)
+        assert curve.end == (3, 3)
+
+
 class ModelTests(unittest.TestCase):
     def test_model(self):
         model_string = (
