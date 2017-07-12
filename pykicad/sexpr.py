@@ -320,10 +320,11 @@ def tree_to_string(tree, level=0):
 
     assert isinstance(tree, dict)
 
-    i, pos = 0, []
-    while str(i) in tree:
-        pos.append(tree_to_string(tree[str(i)], level))
-        i += 1
+    keys = [key for key in tree.keys() if key.isdigit()]
+    keys.sort()
+    pos = []
+    for key in keys:
+        pos.append(tree_to_string(tree[key], level))
 
     single = []
     multiple = []

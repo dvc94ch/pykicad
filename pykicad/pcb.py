@@ -565,76 +565,92 @@ class Pcb(AST):
             '_parser': text + text
         },
         '2': {
-            '_attr': 'nets',
-            '_parser': Net,
-            '_multiple': True
+            'general': {
+                'thickness': {
+                    '_parser': number,
+                    '_attr': 'board_thickness'
+                },
+                'area': {
+                    '_parser': number + number + number + number,
+                    '_attr': 'board_area'
+                },
+                'nets': {
+                    '_parser': integer,
+                    '_attr': 'num_nets'
+                },
+                'tracks': {
+                    '_parser': integer,
+                    '_attr': 'num_tracks'
+                },
+                'zones': {
+                    '_parser': integer,
+                    '_attr': 'num_zones'
+                },
+                'modules': {
+                    '_parser': integer,
+                    '_attr': 'num_modules'
+                },
+                'no_connects': {
+                    '_parser': integer,
+                    '_attr': 'num_no_connects'
+                },
+                'drawings': {
+                    '_parser': integer,
+                    '_attr': 'num_drawings'
+                },
+                'links': {
+                    '_parser': integer,
+                    '_attr': 'num_links'
+                },
+            },
+            '_optional': True
         },
-        'general': {
-            'thickness': {
-                '_parser': number,
-                '_attr': 'board_thickness'
-            },
-            'area': {
-                '_parser': number + number + number + number,
-                '_attr': 'board_area'
-            },
-            'nets': {
-                '_parser': integer,
-                '_attr': 'num_nets'
-            },
-            'tracks': {
-                '_parser': integer,
-                '_attr': 'num_tracks'
-            },
-            'zones': {
-                '_parser': integer,
-                '_attr': 'num_zones'
-            },
-            'modules': {
-                '_parser': integer,
-                '_attr': 'num_modules'
-            },
-            'no_connects': {
-                '_parser': integer,
-                '_attr': 'num_no_connects'
-            },
-            'drawings': {
-                '_parser': integer,
-                '_attr': 'num_drawings'
-            },
-            'links': {
-                '_parser': integer,
-                '_attr': 'num_links'
-            },
-        },
-        'title_block': {
-            'title': text,
-            'date': text,
-            'rev': text,
-            'company': text,
-            'comment1': comment(1),
-            'comment2': comment(2),
-            'comment3': comment(3),
-            'comment4': comment(4)
-        },
-        'page': {
-            '0': {
-                '_parser': Literal('A4') | 'A3' | 'A2' | 'A1' | 'A0' | \
+        '3': {
+            'page': {
+                '0': {
+                    '_parser': Literal('A4') | 'A3' | 'A2' | 'A1' | 'A0' | \
                     'A' | 'B' | 'C' | 'D' | 'E' | \
                     'USLedger' | 'USLegal' | 'USLetter' | \
                     'GERBER' | (Suppress('User') + number + number),
-                '_attr': 'page_type',
-                '_printer': (lambda x: 'User %f %f' % (x[0], x[1])
-                             if isinstance(x, list) else x)
+                    '_attr': 'page_type',
+                    '_printer': (lambda x: 'User %f %f' % (x[0], x[1])
+                                 if isinstance(x, list) else x)
+                },
+                'portrait': flag('portrait')
             },
-            'portrait': flag('portrait')
+            '_optional': True
         },
-        'setup': Setup,
-        'layers': {
+        '4': {
+            'title_block': {
+                'title': text,
+                'date': text,
+                'rev': text,
+                'company': text,
+                'comment1': comment(1),
+                'comment2': comment(2),
+                'comment3': comment(3),
+                'comment4': comment(4)
+            },
+            '_optional': True
+        },
+        '5': {
             'layers': {
-                '_parser': Layer,
-                '_multiple': True
-            }
+                'layers': {
+                    '_parser': Layer,
+                    '_multiple': True
+                },
+                '_optional': True
+            },
+        },
+        '6': {
+            'setup': Setup,
+            '_optional': True
+        },
+        '7': {
+            '_attr': 'nets',
+            '_parser': Net,
+            '_multiple': True,
+            '_optional': True
         },
         'net_classes': {
             '_parser': NetClass,
@@ -745,6 +761,12 @@ class Pcb(AST):
         for net in self.nets:
             if net.code == code:
                 return net
+
+    def to_file(self, path):
+        if not path.endswith('.kicad_pcb'):
+            path += '.kicad_pcb'
+        with open(path, 'w+', encoding='utf-8') as f:
+            f.write(self.to_string())
 
     @classmethod
     def from_file(cls, path):
