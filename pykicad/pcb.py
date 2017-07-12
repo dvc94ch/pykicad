@@ -341,7 +341,7 @@ class Zone(AST):
     }
 
     def __init__(self, net=None, net_name=None, layer=None, tstamp=None,
-                 hatch_type=None, hatch_size=None, priority=None, connect_pads=None,
+                 hatch_type='edge', hatch_size=0.5, priority=None, connect_pads=None,
                  clearance=None, min_thickness=None, fill=True, fill_mode=None,
                  arc_segments=None, thermal_gap=None, thermal_bridge_width=None,
                  smoothing=None, radius=None, keepout_tracks=None, keepout_vias=None,

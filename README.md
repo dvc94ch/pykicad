@@ -48,6 +48,10 @@ v1 = Via(at=pos.tolist(), size=.8, drill=.6, net=vo.code)
 s1 = Segment(start=start.tolist(), end=pos.tolist(), net=vo.code)
 s2 = Segment(start=pos.tolist(), end=end.tolist(), net=vo.code)
 
+# Create zones
+coords = [(0, 0), (10, 0), (10, 10), (0, 10)]
+gndplane_top = Zone(net_name='GND', layer='F.Cu', polygon=coords, clearance=0.3)
+
 
 layers = [
     Layer('F.Cu'),
@@ -76,7 +80,7 @@ pcb.net_classes += [nc1]
 pcb.nets += [vi, vo, gnd]
 pcb.segments += [s1, s2]
 pcb.vias += [v1]
-
+pcb.zones += [gndplane_top]
 
 pcb.to_file('project')
 ```
