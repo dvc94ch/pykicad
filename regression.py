@@ -97,20 +97,25 @@ def regression_test(libs, debug=False, blacklist=[]):
 
 if __name__ == '__main__':
     blacklist = [
-        ('Crystals', 'HC-18UV'), # two identical models in definition
-        ('Measurement_Points', 'Test_Point_2Pads'), # float compare error
     ]
 
     test_modules = [
-        ('Converters_DCDC_ACDC', 'DCDC-Conv_Infineon_IR3898')
     ]
 
-    for lib, mod in test_modules:
-        test_parse_module(find_module(lib, mod))
+    test_libraries = [
 
-    # regression_test(list_libraries())
+    ]
 
-    # try:
+    #for lib, mod in test_modules:
+    #    test_parse_module(find_module(lib, mod))
+
+    regression_test(list_libraries())
+
+    #try:
     #    regression_test(test_libraries, debug=True, blacklist=blacklist)
-    # except PcbnewException:
+    #except PcbnewException:
     #    os.system('pcbnew test.kicad_pcb')
+
+    #pcb = Pcb.from_file('project.kicad_pcb')
+    #assert Pcb.parse(str(pcb)) == pcb
+    #pcb.to_file('project2')
