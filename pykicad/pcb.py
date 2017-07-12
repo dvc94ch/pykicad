@@ -1,5 +1,5 @@
 from pykicad.sexpr import *
-from pykicad.module import Module, Net
+from pykicad.module import Module, Net, xy_schema
 
 
 class Segment(AST):
@@ -20,6 +20,41 @@ class Segment(AST):
                                       layer=layer, net=net, tstamp=tstamp,
                                       status=status)
 
+
+class Text(AST):
+    tag = 'gr_text'
+    schema = {
+        '0': {
+            '_attr': 'text',
+            '_parser': text
+        },
+        '1': {
+            '_tag': 'at',
+            '_parser': number + number + Optional(number)
+        },
+        'layer': text,
+        'effects': {
+            'font': {
+                'size': number + number,
+                'thickness': number,
+                'bold': flag('bold'),
+                'italic': flag('italic')
+            },
+            'justify': Literal('left') | 'right' | 'top' | 'bottom' | 'mirror',
+            'hide': flag('hide')
+        },
+        'hide': flag('hide'),
+        'tstamp': hex
+    }
+
+    def __init__(self, text, at, layer='F.SilkS', size=None, thickness=None,
+                 bold=False, italic=False, justify=None, hide=False, tstamp=None):
+
+        super(Text, self).__init__(text=text, at=at, layer=layer, size=size,
+                                   thickness=thickness, bold=bold, italic=italic,
+                                   justify=justify, hide=hide, tstamp=tstamp)
+
+
 class Line(AST):
     tag = 'gr_line'
     schema = {
@@ -31,15 +66,124 @@ class Line(AST):
             '_tag': 'end',
             '_parser': number + number,
         },
-        'width': number,
         'layer': text,
+        'width': number,
         'tstamp': hex,
+        'status': hex
     }
 
-    def __init__(self, start, end, width=None, layer='F.Cu',
-                 tstamp=None):
-        super(Line, self).__init__(start=start, end=end, width=width,
-                                   layer=layer, tstamp=tstamp)
+    def __init__(self, start, end, layer='Edge.Cuts', width=None,
+                 tstamp=None, status=None):
+        super(Line, self).__init__(start=start, end=end, layer=layer, width=width,
+                                   tstamp=tstamp, status=status)
+
+
+class Arc(AST):
+    tag = 'gr_arc'
+    schema = {
+        '0': {
+            '_tag': 'start',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number
+        },
+        'angle': number,
+        'layer': text,
+        'width': number,
+        'tstamp': hex,
+        'status': hex
+    }
+
+    def __init__(self, start, end, angle, layer='Edge.Cuts', width=None,
+                 tstamp=None, status=None):
+        super(Arc, self).__init__(start=start, end=end, angle=angle, layer=layer,
+                                  width=width, tstamp=tstamp, status=status)
+
+
+class Circle(AST):
+    tag = 'gr_circle'
+    schema = {
+        '0': {
+            '_tag': 'center',
+            '_parser': number + number
+        },
+        '1': {
+            '_tag': 'end',
+            '_parser': number + number
+        },
+        'layer': text,
+        'width': number,
+        'tstamp': hex,
+        'status': hex
+    }
+
+    def __init__(self, center, end, layer='Edge.Cuts', width=None,
+                 tstamp=None, status=None):
+        super(Circle, self).__init__(center=center, end=end, layer=layer,
+                                     width=width, tstamp=tstamp, status=status)
+
+
+class Polygon(AST):
+    tag = 'gr_poly'
+    schema = {
+        '0': {
+            'pts': xy_schema('pts'),
+        },
+        'layer': text,
+        'width': number,
+        'tstamp': hex,
+        'status': hex
+    }
+
+    def __init__(self, pts, layer='Edge.Cuts', width=None, tstamp=None, status=None):
+        super(Polygon, self).__init__(pts=pts, layer=layer, width=width,
+                                      tstamp=tstamp, status=status)
+
+
+class Curve(AST):
+    tag = 'gr_curve'
+    schema = {
+        '0': {
+            'pts': {
+                '0': {
+                    'xy': {
+                        '_attr': 'start',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '1': {
+                    'xy': {
+                        '_attr': 'bezier1',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '2': {
+                    'xy': {
+                        '_attr': 'bezier2',
+                        '_parser': tuple_parser(2)
+                    }
+                },
+                '3': {
+                    'xy': {
+                        '_attr': 'end',
+                        '_parser': tuple_parser(2)
+                    }
+                }
+            },
+            'layer': text,
+            'width': number,
+            'tstamp': hex,
+            'status': hex
+        }
+    }
+
+    def __init__(self, start, bezier1, bezier2, end, layer='Edge.Cuts',
+                 width=None, tstamp=None, status=None):
+        super(Curve, self).__init__(start=start, bezier1=bezier1,
+                                    bezier2=bezier2, end=end, layer=layer,
+                                    width=width, tstamp=tstamp, status=status)
 
 
 class Via(AST):
@@ -139,6 +283,155 @@ class NetClass(AST):
                                        diff_pair_width=diff_pair_width,
                                        diff_pair_gap=diff_pair_gap,
                                        nets=nets)
+
+
+class Zone(AST):
+    tag = 'zone'
+    schema = {
+        'net': integer,
+        'net_name': text,
+        'layer': text,
+        'tstamp': hex,
+        'hatch': {
+            '0': {
+                '_attr': 'hatch_type',
+                '_parser': Literal('none') | 'edge' | 'full'
+            },
+            '1': {
+                '_attr': 'hatch_size',
+                '_parser': number
+            }
+        },
+        'priority': number,
+        'connect_pads': {
+            '0': {
+                '_attr': 'connect_pads',
+                '_tag': False,
+                '_parser': Literal('yes') | 'no' | 'thru_hole_only'
+            },
+            'clearance': number
+        },
+        'min_thickness': number,
+        'fill': {
+            '0': extend_schema(yes_no('fill')['0'], _tag=False, _optional=True),
+            'mode': {
+                '_attr': 'fill_mode',
+                '_parser': Literal('segment') | 'polygon'
+            },
+            'arc_segments': integer,
+            'thermal_gap': number,
+            'thermal_bridge_width': number,
+            'smoothing': Literal('none') | 'chamfer' | 'fillet',
+            'radius': number
+        },
+        'keepout': {
+            'tracks': allowed('keepout_tracks'),
+            'vias': allowed('keepout_vias'),
+            'copperpour': allowed('keepout_copperpour')
+        },
+        'polygon': {
+            'pts': xy_schema('polygon')
+        },
+        'filled_polygon': {
+            'pts': xy_schema('filled_polygon')
+        },
+        'fill_segments': {
+            'pts': xy_schema('fill_segments')
+        }
+    }
+
+    def __init__(self, net=None, net_name=None, layer=None, tstamp=None,
+                 hatch_type=None, hatch_size=None, priority=None, connect_pads=None,
+                 clearance=None, min_thickness=None, fill=True, fill_mode=None,
+                 arc_segments=None, thermal_gap=None, thermal_bridge_width=None,
+                 smoothing=None, radius=None, keepout_tracks=None, keepout_vias=None,
+                 keepout_copperpour=None, polygon=None, filled_polygon=None,
+                 fill_segments=None):
+
+        super(Zone, self).__init__(net=net, net_name=net_name, layer=layer,
+                                   tstamp=tstamp, hatch_type=hatch_type,
+                                   hatch_size=hatch_size, priority=priority,
+                                   connect_pads=connect_pads, clearance=clearance,
+                                   min_thickness=min_thickness, fill=fill,
+                                   fill_mode=fill_mode, arc_segments=arc_segments,
+                                   thermal_gap=thermal_gap,
+                                   thermal_bridge_width=thermal_bridge_width,
+                                   smoothing=smoothing, radius=radius,
+                                   keepout_tracks=keepout_tracks,
+                                   keepout_vias=keepout_vias,
+                                   keepout_copperpour=keepout_copperpour,
+                                   polygon=polygon, filled_polygon=filled_polygon,
+                                   fill_segments=fill_segments)
+
+
+class Target(AST):
+    tag = 'target'
+    schema = {
+        'shape': {
+            '_tag': False,
+            '_attr': 'shape',
+            '_parser': Literal('x') | 'plus',
+            '_printer': lambda x: x
+        },
+        'at': number + number,
+        'size': number,
+        'width': number,
+        'layer': text,
+        'tstamp': hex
+    }
+
+    def __init__(self, shape, at, size=None, width=None,
+                 layer='Edge.Cuts', tstamp=None):
+        super(Target, self).__init__(shape=shape, at=at, size=size, width=width,
+                                     layer=layer, tstamp=tstamp)
+
+
+class Dimension(AST):
+    tag = 'dimension'
+    schema = {
+        '0': {
+            '_attr': 'value',
+            '_parser': number
+        },
+        '1': {
+            '_tag': 'width',
+            '_parser': number
+        },
+        'layer': text,
+        'text': Text,
+        'feature1': {
+            'pts': xy_schema('feature1')
+        },
+        'feature2': {
+            'pts': xy_schema('feature2')
+        },
+        'crossbar': {
+            'pts': xy_schema('crossbar')
+        },
+        'arrow1a': {
+            'pts': xy_schema('arrow1a')
+        },
+        'arrow1b': {
+            'pts': xy_schema('arrow1b')
+        },
+        'arrow2a': {
+            'pts': xy_schema('arrow2a')
+        },
+        'arrow2b': {
+            'pts': xy_schema('arrow2b')
+        },
+        'tstamp': hex
+    }
+
+    def __init__(self, value, width, layer='F.SilkS', text=None, feature1=None,
+                 feature2=None, crossbar=None, arrow1a=None, arrow1b=None,
+                 arrow2a=None, arrow2b=None, tstamp=None):
+        super(Dimension, self).__init__(value=value, width=width, layer=layer,
+                                        text=text, feature1=feature1,
+                                        feature2=feature2, crossbar=crossbar,
+                                        arrow1a=arrow1a, arrow1b=arrow1b,
+                                        arrow2a=arrow2a, arrow2b=arrow2b,
+                                        tstamp=tstamp)
 
 
 class Setup(AST):
@@ -359,8 +652,40 @@ class Pcb(AST):
             '_parser': Via,
             '_multiple': True
         },
+        'texts': {
+            '_parser': Text,
+            '_multiple': True
+        },
         'lines': {
             '_parser': Line,
+            '_multiple': True
+        },
+        'arcs': {
+            '_parser': Arc,
+            '_multiple': True
+        },
+        'circles': {
+            '_parser': Circle,
+            '_multiple': True
+        },
+        'polygons': {
+            '_parser': Polygon,
+            '_multiple': True
+        },
+        'curves': {
+            '_parser': Curve,
+            '_multiple': True
+        },
+        'zones': {
+            '_parser': Zone,
+            '_multiple': True
+        },
+        'targets': {
+            '_parser': Target,
+            '_multiple': True
+        },
+        'dimensions': {
+            '_parser': Dimension,
             '_multiple': True
         }
     }
@@ -373,7 +698,9 @@ class Pcb(AST):
                  comment1=None, comment2=None, comment3=None, comment4=None,
                  page_type=None, portrait=None, setup=None,
                  layers=None, nets=None, net_classes=None, modules=None,
-                 segments=None, vias=None, lines=None):
+                 segments=None, vias=None, texts=None, lines=None, arcs=None,
+                 circles=None, polygons=None, curves=None, zones=None,
+                 targets=None, dimensions=None):
 
         layers = self.init_list(layers, [])
         nets = self.init_list(nets, [])
@@ -381,7 +708,15 @@ class Pcb(AST):
         modules = self.init_list(modules, [])
         segments = self.init_list(segments, [])
         vias = self.init_list(vias, [])
+        texts = self.init_list(texts, [])
         lines = self.init_list(lines, [])
+        arcs = self.init_list(arcs, [])
+        circles = self.init_list(circles, [])
+        polygons = self.init_list(polygons, [])
+        curves = self.init_list(curves, [])
+        zones = self.init_list(zones, [])
+        targets = self.init_list(targets, [])
+        dimensions = self.init_list(dimensions, [])
 
         super(Pcb, self).__init__(version=version, host=host,
                                   board_thickness=board_thickness,
@@ -392,7 +727,10 @@ class Pcb(AST):
                                   page_type=page_type, portrait=portrait,
                                   setup=setup, layers=layers, nets=nets,
                                   net_classes=net_classes, modules=modules,
-                                  segments=segments, vias=vias, lines=lines)
+                                  segments=segments, vias=vias, texts=texts,
+                                  lines=lines, arcs=arcs, circles=circles,
+                                  polygons=polygons, curves=curves, zones=zones,
+                                  targets=targets, dimensions=dimensions)
 
     def module_by_reference(self, name):
         '''Returns a module called name.'''

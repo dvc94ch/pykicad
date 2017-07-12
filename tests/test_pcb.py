@@ -27,6 +27,14 @@ class NetClassTests(unittest.TestCase):
         assert NetClass.parse(nc.to_string()) == nc
 
 
+class ZoneTests(unittest.TestCase):
+    def test_parse(self):
+        zone_string = '(zone (polygon (pts (xy 0 0) (xy 1 1))))'
+        zone = Zone.parse(zone_string)
+        assert zone.polygon[0] == (0, 0)
+        assert zone.polygon[1] == (1, 1)
+        assert Zone.parse(zone.to_string()) == zone
+
 class PcbTests(unittest.TestCase):
     def test_minimal_pcb(self):
         pcb_string = open('tests/minimal_pcb.kicad_pcb', 'r').read()
