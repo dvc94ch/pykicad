@@ -748,6 +748,24 @@ class Pcb(AST):
                                   polygons=polygons, curves=curves, zones=zones,
                                   targets=targets, dimensions=dimensions)
 
+    def geometry(self):
+        for element_list in [self.lines, self.circles, self.arcs,
+                             self.curves, self.polygons]:
+            for elem in element_list:
+                yield elem
+
+    def elements_by_layer(self, layer):
+        '''Returns a iterator of elements on layer.'''
+
+        for elem in self.geometry():
+            if elem.layer == layer:
+                yield elem
+
+    def outline(self):
+        '''Returns the outline of a pcb.'''
+
+        return list(self.elements_by_layer('Edge.Cuts'))
+
     def module_by_reference(self, name):
         '''Returns a module called name.'''
 
