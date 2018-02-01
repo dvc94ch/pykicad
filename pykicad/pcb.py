@@ -21,7 +21,7 @@ class Segment(AST):
                                       status=status)
 
 
-class Text(AST):
+class GrText(AST):
     tag = 'gr_text'
     schema = {
         '0': {
@@ -50,12 +50,12 @@ class Text(AST):
     def __init__(self, text, at, layer='F.SilkS', size=None, thickness=None,
                  bold=False, italic=False, justify=None, hide=False, tstamp=None):
 
-        super(Text, self).__init__(text=text, at=at, layer=layer, size=size,
-                                   thickness=thickness, bold=bold, italic=italic,
-                                   justify=justify, hide=hide, tstamp=tstamp)
+        super(GrText, self).__init__(text=text, at=at, layer=layer, size=size,
+                                     thickness=thickness, bold=bold, italic=italic,
+                                     justify=justify, hide=hide, tstamp=tstamp)
 
 
-class Line(AST):
+class GrLine(AST):
     tag = 'gr_line'
     schema = {
         '0': {
@@ -74,11 +74,11 @@ class Line(AST):
 
     def __init__(self, start, end, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(Line, self).__init__(start=start, end=end, layer=layer, width=width,
-                                   tstamp=tstamp, status=status)
+        super(GrLine, self).__init__(start=start, end=end, layer=layer, width=width,
+                                     tstamp=tstamp, status=status)
 
 
-class Arc(AST):
+class GrArc(AST):
     tag = 'gr_arc'
     schema = {
         '0': {
@@ -98,11 +98,11 @@ class Arc(AST):
 
     def __init__(self, start, end, angle, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(Arc, self).__init__(start=start, end=end, angle=angle, layer=layer,
-                                  width=width, tstamp=tstamp, status=status)
+        super(GrArc, self).__init__(start=start, end=end, angle=angle, layer=layer,
+                                    width=width, tstamp=tstamp, status=status)
 
 
-class Circle(AST):
+class GrCircle(AST):
     tag = 'gr_circle'
     schema = {
         '0': {
@@ -121,11 +121,11 @@ class Circle(AST):
 
     def __init__(self, center, end, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(Circle, self).__init__(center=center, end=end, layer=layer,
-                                     width=width, tstamp=tstamp, status=status)
+        super(GrCircle, self).__init__(center=center, end=end, layer=layer,
+                                       width=width, tstamp=tstamp, status=status)
 
 
-class Polygon(AST):
+class GrPolygon(AST):
     tag = 'gr_poly'
     schema = {
         '0': {
@@ -138,11 +138,11 @@ class Polygon(AST):
     }
 
     def __init__(self, pts, layer='Edge.Cuts', width=None, tstamp=None, status=None):
-        super(Polygon, self).__init__(pts=pts, layer=layer, width=width,
-                                      tstamp=tstamp, status=status)
+        super(GrPolygon, self).__init__(pts=pts, layer=layer, width=width,
+                                        tstamp=tstamp, status=status)
 
 
-class Curve(AST):
+class GrCurve(AST):
     tag = 'gr_curve'
     schema = {
         '0': {
@@ -181,9 +181,9 @@ class Curve(AST):
 
     def __init__(self, start, bezier1, bezier2, end, layer='Edge.Cuts',
                  width=None, tstamp=None, status=None):
-        super(Curve, self).__init__(start=start, bezier1=bezier1,
-                                    bezier2=bezier2, end=end, layer=layer,
-                                    width=width, tstamp=tstamp, status=status)
+        super(GrCurve, self).__init__(start=start, bezier1=bezier1,
+                                      bezier2=bezier2, end=end, layer=layer,
+                                      width=width, tstamp=tstamp, status=status)
 
 
 class Via(AST):
@@ -398,7 +398,7 @@ class Dimension(AST):
             '_parser': number
         },
         'layer': text,
-        'text': Text,
+        'text': GrText,
         'feature1': {
             'pts': xy_schema('feature1')
         },
@@ -669,27 +669,27 @@ class Pcb(AST):
             '_multiple': True
         },
         'texts': {
-            '_parser': Text,
+            '_parser': GrText,
             '_multiple': True
         },
         'lines': {
-            '_parser': Line,
+            '_parser': GrLine,
             '_multiple': True
         },
         'arcs': {
-            '_parser': Arc,
+            '_parser': GrArc,
             '_multiple': True
         },
         'circles': {
-            '_parser': Circle,
+            '_parser': GrCircle,
             '_multiple': True
         },
         'polygons': {
-            '_parser': Polygon,
+            '_parser': GrPolygon,
             '_multiple': True
         },
         'curves': {
-            '_parser': Curve,
+            '_parser': GrCurve,
             '_multiple': True
         },
         'zones': {
