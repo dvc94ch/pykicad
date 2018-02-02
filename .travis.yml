@@ -6,9 +6,9 @@ python:
 
 # command to install dependencies
 install:
-  - "pip install -e . --upgrade"
-  - "pipenv install --dev"
+  - pip install --user pipenv
+  - pipenv install --dev
 
 # command to run the dependencies
 script:
-  - "pipenv run pytest"
+  - pipenv run pytest
