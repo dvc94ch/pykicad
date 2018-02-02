@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dvc94ch/pykicad.svg?branch=master)](https://travis-ci.org/dvc94ch/pykicad)
+
 # Routines for generating and parsing KiCAD files
 
 There are multiple python scripts that read and write kicad file
