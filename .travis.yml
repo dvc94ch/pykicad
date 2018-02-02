@@ -6,7 +6,7 @@ python:
 
 # command to install dependencies
 install:
-  - pip install --user pipenv
+  - pip install pipenv
   - pipenv install --dev
 
 # command to run the dependencies
