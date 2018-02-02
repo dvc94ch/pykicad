@@ -17,6 +17,8 @@ def debug_print(text):
 def randomize_attribute_order(self):
     return AST.to_string(self, sorted(self.attributes.items(),
                                       key=lambda x: random.random()))
+
+
 Module.to_string = randomize_attribute_order
 
 
@@ -90,7 +92,8 @@ def regression_test(libs, debug=False, blacklist=[]):
                   (num_tested_modules, num_modules))
 
     print('====================================')
-    print('Failed to parse %d out of %d modules' % (len(failed_modules), num_modules))
+    print('Failed to parse %d out of %d modules' %
+          (len(failed_modules), num_modules))
     print('====================================')
     print(failed_modules)
 
@@ -106,16 +109,16 @@ if __name__ == '__main__':
 
     ]
 
-    #for lib, mod in test_modules:
+    # for lib, mod in test_modules:
     #    test_parse_module(find_module(lib, mod))
 
     regression_test(list_libraries())
 
-    #try:
+    # try:
     #    regression_test(test_libraries, debug=True, blacklist=blacklist)
-    #except PcbnewException:
+    # except PcbnewException:
     #    os.system('pcbnew test.kicad_pcb')
 
     #pcb = Pcb.from_file('project.kicad_pcb')
     #assert Pcb.parse(str(pcb)) == pcb
-    #pcb.to_file('project2')
+    # pcb.to_file('project2')

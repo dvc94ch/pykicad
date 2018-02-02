@@ -608,9 +608,9 @@ class Pcb(AST):
         '3': {
             'page': {
                 '0': {
-                    '_parser': Literal('A4') | 'A3' | 'A2' | 'A1' | 'A0' | \
-                    'A' | 'B' | 'C' | 'D' | 'E' | \
-                    'USLedger' | 'USLegal' | 'USLetter' | \
+                    '_parser': Literal('A4') | 'A3' | 'A2' | 'A1' | 'A0' |
+                    'A' | 'B' | 'C' | 'D' | 'E' |
+                    'USLedger' | 'USLegal' | 'USLetter' |
                     'GERBER' | (Suppress('User') + number + number),
                     '_attr': 'page_type',
                     '_printer': (lambda x: 'User %f %f' % (x[0], x[1])

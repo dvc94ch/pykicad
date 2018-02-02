@@ -4,6 +4,7 @@ from pyparsing import ParseException
 from pykicad.sexpr import *
 from pykicad.module import Drill
 
+
 class ASTTests(unittest.TestCase):
     def test_unicode(self):
         AST.from_schema('sexpr', text)

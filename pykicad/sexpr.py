@@ -11,24 +11,29 @@ dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
 
+
 def boolean_schema(attr, true, false):
     return {
         '0': {
             '_attr': attr,
-            '_parser': (Literal(true) | false) \
-                        .setParseAction(lambda toks: True if toks[0] == true else False),
+            '_parser': (Literal(true) | false)
+            .setParseAction(lambda toks: True if toks[0] == true else False),
             '_printer': lambda b: true if b else false
         }
     }
 
+
 def boolean(attr):
     return boolean_schema(attr, 'true', 'false')
+
 
 def yes_no(attr):
     return boolean_schema(attr, 'yes', 'no')
 
+
 def allowed(attr):
     return boolean_schema(attr, 'allowed', 'not_allowed')
+
 
 def tuple_parser(i, parser=number):
     tparser = Empty()
@@ -37,6 +42,7 @@ def tuple_parser(i, parser=number):
     tparser.setParseAction(lambda t: tuple(t))
     return tparser
 
+
 def extend_schema(schema, **kwargs):
     schema.update(kwargs)
     return schema
@@ -44,9 +50,9 @@ def extend_schema(schema, **kwargs):
 
 # Python 2 compatibility
 try:
-  basestring
+    basestring
 except NameError:
-  basestring = str
+    basestring = str
 
 
 def flag(name):
@@ -90,6 +96,7 @@ def reduce_parser_list(parsers, func):
         return reduce(func, parsers)
     return Empty()
 
+
 def sexpr(name, positional=None, single=None, multiple=None):
     if isinstance(positional, ParserElement):
         parser = positional
@@ -120,7 +127,6 @@ def generate_parser(tag, schema, attr=None, optional=False):
     def ast(ast, attr):
         return Group(ast.parser()).setParseAction(ast_parse_action(attr, ast))
 
-
     # Case 1: schema is a ParserElement
     if isinstance(schema, ParserElement):
         parser = schema
@@ -146,7 +152,6 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
         return parser
 
-
     # Case 2: schema is a subclass of AST
     if type(schema) == type and issubclass(schema, AST):
 
@@ -162,10 +167,8 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
         return parser
 
-
     # Case 3: schema is a dict or something is wrong
     assert isinstance(schema, dict)
-
 
     # Subcase 1: schema is a leaf node
     if '_parser' in schema:
@@ -247,7 +250,6 @@ def find_attr(attr, value, schema):
 
         return printer
 
-
     # Case 1: Schema is a leaf node
     if is_leaf_node(schema):
         if not isinstance(schema, dict):
@@ -265,12 +267,11 @@ def find_attr(attr, value, schema):
 
         return None
 
-
     # Case 2: Subschema is a leaf node and the schema does not
     # overwrite the _attr.
     if attr in schema and is_leaf_node(schema[attr]) and \
        (not isinstance(schema[attr], dict) or
-        (schema[attr].get('_attr', attr) == attr)):
+            (schema[attr].get('_attr', attr) == attr)):
 
         subschema = schema[attr]
         tag = attr
@@ -284,7 +285,6 @@ def find_attr(attr, value, schema):
             tag = '_' + attr
 
         return {tag: value}
-
 
     # Default: Search in subschemas
     for key, subschema in schema.items():

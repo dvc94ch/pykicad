@@ -35,6 +35,7 @@ class ZoneTests(unittest.TestCase):
         assert zone.polygon[1] == (1, 1)
         assert Zone.parse(zone.to_string()) == zone
 
+
 class PcbTests(unittest.TestCase):
     def test_minimal_pcb(self):
         pcb_string = open('tests/minimal_pcb.kicad_pcb', 'r').read()

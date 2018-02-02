@@ -22,7 +22,8 @@ class DrillTests(unittest.TestCase):
 
 class PadTests(unittest.TestCase):
     def test_pad(self):
-        pad = Pad.parse('(pad 1 smd rect (at 0.1 0.1) (size 0.2 0.2) (layers F.Cu))')
+        pad = Pad.parse(
+            '(pad 1 smd rect (at 0.1 0.1) (size 0.2 0.2) (layers F.Cu))')
         assert pad.name == '1'
         assert pad.type == 'smd'
         assert pad.shape == 'rect'
@@ -54,13 +55,15 @@ class TextTests(unittest.TestCase):
         assert Text.parse(text.to_string()) == text
 
     def test_text_with_rotation(self):
-        text = Text.parse('(fp_text user text (at 0.0 0.0 0.0) (layer F.SilkS))')
+        text = Text.parse(
+            '(fp_text user text (at 0.0 0.0 0.0) (layer F.SilkS))')
         assert text.at == [0.0, 0.0, 0.0]
         assert text.hide == False
         assert Text.parse(text.to_string()) == text
 
     def test_text_with_hide(self):
-        text = Text.parse('(fp_text user text (at 0.0 0.0) (layer F.SilkS) hide)')
+        text = Text.parse(
+            '(fp_text user text (at 0.0 0.0) (layer F.SilkS) hide)')
         assert text.hide == True
         assert Text.parse(text.to_string()) == text
 
@@ -97,7 +100,8 @@ class PolygonTests(unittest.TestCase):
 
 class CurveTests(unittest.TestCase):
     def test_curve(self):
-        curve = Curve.parse('(fp_curve (pts (xy 0 0) (xy 1 1) (xy 2 2) (xy 3 3)))')
+        curve = Curve.parse(
+            '(fp_curve (pts (xy 0 0) (xy 1 1) (xy 2 2) (xy 3 3)))')
         assert curve.start == (0, 0)
         assert curve.bezier1 == (1, 1)
         assert curve.bezier2 == (2, 2)

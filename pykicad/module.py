@@ -40,9 +40,11 @@ def list_modules(library):
             modules.append('.'.join(file.split('.')[0:-1]))
     return modules
 
+
 def filter_by_regex(alist, regex):
     regex = re.compile(regex)
     return [x for x in alist if regex.match(x)]
+
 
 def list_all_modules():
     modules = []
@@ -57,13 +59,13 @@ def flip_layer(layer):
     return side + '.' + layer
 
 
-### AST
+# AST
 def xy_schema(attr):
     return {
         '0': {
             '_attr': attr,
-            '_parser': (Suppress('(xy') + number + number + Suppress(')')) \
-                        .setParseAction(lambda xy: tuple(xy)),
+            '_parser': (Suppress('(xy') + number + number + Suppress(')'))
+            .setParseAction(lambda xy: tuple(xy)),
             '_printer': lambda xy: '(xy %f %f)' % (xy[0], xy[1]),
             '_multiple': True
         }
@@ -99,7 +101,7 @@ class Drill(AST):
             '_attr': 'size',
             '_parser': number | (Suppress('oval') + number + number),
             '_printer': (lambda size:
-                        'oval %s %s' % (str(size[0]), str(size[1])) \
+                         'oval %s %s' % (str(size[0]), str(size[1]))
                          if isinstance(size, list) else str(size)),
             '_optional': True
         },
@@ -437,7 +439,8 @@ class Model(AST):
     }
 
     def __init__(self, path, at, scale, rotate):
-        super(Model, self).__init__(path=path, at=at, scale=scale, rotate=rotate)
+        super(Model, self).__init__(
+            path=path, at=at, scale=scale, rotate=rotate)
 
 
 class Module(AST):
