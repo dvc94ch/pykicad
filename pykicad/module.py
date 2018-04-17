@@ -55,7 +55,8 @@ def list_all_modules():
 
 def flip_layer(layer):
     side, layer = layer.split('.')
-    side = 'B' if side == 'F' else 'B'
+    if side != '*':
+        side = 'B' if side == 'F' else 'B'
     return side + '.' + layer
 
 
