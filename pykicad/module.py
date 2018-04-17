@@ -494,6 +494,10 @@ class Module(AST):
             '_parser': Pad,
             '_multiple': True
         },
+        'polygons': {
+            '_parser': Polygon,
+            '_multiple': True
+        },
         'model': {
             '_parser': Model,
             '_multiple': True
