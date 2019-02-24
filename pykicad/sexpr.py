@@ -1,7 +1,6 @@
 from pyparsing import *
 from functools import reduce
 
-
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
 number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
 integer = Word(nums)
@@ -10,7 +9,6 @@ hex = Word(hexnums)
 dblQuotedString.setParseAction(removeQuotes)
 number.setParseAction(lambda tokens: float(tokens[0]))
 integer.setParseAction(lambda tokens: int(tokens[0]))
-
 
 def boolean_schema(attr, true, false):
     return {
@@ -22,18 +20,14 @@ def boolean_schema(attr, true, false):
         }
     }
 
-
 def boolean(attr):
     return boolean_schema(attr, 'true', 'false')
-
 
 def yes_no(attr):
     return boolean_schema(attr, 'yes', 'no')
 
-
 def allowed(attr):
     return boolean_schema(attr, 'allowed', 'not_allowed')
-
 
 def tuple_parser(i, parser=number):
     tparser = Empty()
@@ -42,18 +36,15 @@ def tuple_parser(i, parser=number):
     tparser.setParseAction(lambda t: tuple(t))
     return tparser
 
-
 def extend_schema(schema, **kwargs):
     schema.update(kwargs)
     return schema
-
 
 # Python 2 compatibility
 try:
     basestring
 except NameError:
     basestring = str
-
 
 def flag(name):
     return {
@@ -62,7 +53,6 @@ def flag(name):
         '_tag': False,
         '_attr': name
     }
-
 
 def parse_action(tokens):
     if len(tokens) < 2:
@@ -74,28 +64,22 @@ def parse_action(tokens):
         return res
     return list(tokens)
 
-
 def leaf_parse_action(attr):
     def action(tokens):
         return {attr: parse_action(tokens[0])}
-
     return action
-
 
 def ast_parse_action(attr, ast):
     def action(tokens=None):
         if tokens is None:
             return
         return {attr: ast(**parse_action(tokens[0]))}
-
     return action
-
 
 def reduce_parser_list(parsers, func):
     if isinstance(parsers, list) and len(parsers) > 0:
         return reduce(func, parsers)
     return Empty()
-
 
 def sexpr(name, positional=None, single=None, multiple=None):
     if isinstance(positional, ParserElement):
@@ -112,15 +96,12 @@ def sexpr(name, positional=None, single=None, multiple=None):
     name = Empty() if name == '' else Suppress(name)
     return Suppress('(') + name + parser + Suppress(')')
 
-
 def generate_parser(tag, schema, attr=None, optional=False):
     '''A schema is either a ParserElement, a AST subclass or a dict.  When
     a dict contains a _parser key it is a leaf.
-
     A leaf has an _attr name.  When no _attr name is given explicitly it
     defaults to using the tag name.
     '''
-
     def leaf(parser, attr):
         return Group(parser).setParseAction(leaf_parse_action(attr))
 
@@ -339,7 +320,6 @@ def tree_to_string(tree, level=0):
 
     return ' '.join(pos + single + multiple)
 
-
 def merge_dict(d1, d2):
     for key, value in d2.items():
         if key in d1:
@@ -352,8 +332,8 @@ def merge_dict(d1, d2):
         else:
             d1[key] = value
 
-
 class AST(object):
+    '''Extraordinarily undocumented AST class'''
     tag = 'sexpr'
     schema = text
 
@@ -367,12 +347,14 @@ class AST(object):
             raise AttributeError(e)
 
     def __setattr__(self, attr, value):
+        '''If attr in attributes then set otherwise set attr regularly'''
         if not attr == 'attributes' and attr in self.attributes:
             self.attributes[attr] = value
         else:
             super(AST, self).__setattr__(attr, value)
 
     def __eq__(self, other):
+        '''Check to see that attributes are equivalent'''
         return self.attributes == other.attributes
 
     def __repr__(self):
@@ -388,18 +370,14 @@ class AST(object):
     def to_string(self, attributes=None):
         if attributes is None:
             attributes = self.attributes.items()
-
         tree = {}
         for attr, value in attributes:
             if value is None:
                 continue
-
             found = find_attr(attr, value, self.schema)
             if found is None:
                 continue
-
             merge_dict(tree, found)
-
         if tree == {}:
             tree = self.attributes
         else:
@@ -411,7 +389,6 @@ class AST(object):
         '''Helper to initialize lists. Since default arguments are initialized
         at import time and lists are reference types, all lists of all instances
         point to the same list.'''
-
         if arg is None:
             return default
         if not isinstance(arg, list):
@@ -426,14 +403,11 @@ class AST(object):
     def parse(cls, string):
         if not hasattr(cls, '_parser'):
             cls._parser = generate_parser(cls.tag, cls.schema)
-
         parse_result = cls._parser.parseString(string)
-
         result = {}
         for res in parse_result:
             if len(list(res.keys())) < 1:
                 continue
-
             key = next(iter(res.keys()))
             if not key in result:
                 result.update(res)
@@ -441,13 +415,11 @@ class AST(object):
                 if not isinstance(result[key], list):
                     result[key] = [result[key]]
                 result[key].append(res[key])
-
         return cls(**result)
 
     @classmethod
     def from_schema(cls, tag, schema):
         """Only for testing purposes."""
-
         cls.tag = tag
         cls.schema = schema
         cls._parser = generate_parser(tag, schema)
