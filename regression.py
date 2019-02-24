@@ -99,15 +99,9 @@ def regression_test(libs, debug=False, blacklist=[]):
 
 
 if __name__ == '__main__':
-    blacklist = [
-    ]
-
-    test_modules = [
-    ]
-
-    test_libraries = [
-
-    ]
+    blacklist = []
+    test_modules = []
+    test_libraries = []
 
     # for lib, mod in test_modules:
     #    test_parse_module(find_module(lib, mod))
