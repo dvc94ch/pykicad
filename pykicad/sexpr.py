@@ -201,6 +201,9 @@ def generate_parser(tag, schema, attr=None, optional=False):
 
 
 def find_attr(attr, value, schema):
+    '''
+
+    '''
     def is_leaf_node(schema):
         if not isinstance(schema, dict):
             return True
@@ -333,14 +336,19 @@ def merge_dict(d1, d2):
             d1[key] = value
 
 class AST(object):
-    '''Extraordinarily undocumented AST class'''
+    '''
+    Abstract Syntax Tree (AST)
+    Extraordinarily undocumented AST class
+    '''
     tag = 'sexpr'
     schema = text
 
     def __init__(self, **kwargs):
+        '''Set attributes as kwargs passed to AST initializer'''
         self.attributes = kwargs
 
     def __getattr__(self, attr):
+        '''Checks to see if attr is in attributes otherwise raise AttrError'''
         try:
             return self.attributes.get(attr)
         except KeyError as e:
@@ -365,7 +373,7 @@ class AST(object):
         return '(%s %s)' % (self.tag, repr(attrs))
 
     def __str__(self):
-        return self.to_string()[1:] + '\n'
+        return self.to_string()[1:]
 
     def to_string(self, attributes=None):
         if attributes is None:
@@ -382,7 +390,6 @@ class AST(object):
             tree = self.attributes
         else:
             tree = {self.tag: tree}
-
         return tree_to_string(tree)
 
     def init_list(self, arg, default):
@@ -401,8 +408,9 @@ class AST(object):
 
     @classmethod
     def parse(cls, string):
+        '''Parses str and returns instance of class passed into func'''
         if not hasattr(cls, '_parser'):
-            cls._parser = generate_parser(cls.tag, cls.schema)
+            cls._parser = cls.parser()
         parse_result = cls._parser.parseString(string)
         result = {}
         for res in parse_result:

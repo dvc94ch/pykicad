@@ -124,7 +124,6 @@ class GrCircle(AST):
         super(GrCircle, self).__init__(center=center, end=end, layer=layer,
                                        width=width, tstamp=tstamp, status=status)
 
-
 class GrPolygon(AST):
     tag = 'gr_poly'
     schema = {
@@ -140,7 +139,6 @@ class GrPolygon(AST):
     def __init__(self, pts, layer='Edge.Cuts', width=None, tstamp=None, status=None):
         super(GrPolygon, self).__init__(pts=pts, layer=layer, width=width,
                                         tstamp=tstamp, status=status)
-
 
 class GrCurve(AST):
     tag = 'gr_curve'
@@ -185,7 +183,6 @@ class GrCurve(AST):
                                       bezier2=bezier2, end=end, layer=layer,
                                       width=width, tstamp=tstamp, status=status)
 
-
 class Via(AST):
     tag = 'via'
     schema = {
@@ -208,7 +205,6 @@ class Via(AST):
         super(Via, self).__init__(micro=micro, blind=blind, at=at, size=size,
                                   drill=drill, layers=layers, net=net,
                                   tstamp=tstamp, status=status)
-
 
 class Layer(AST):
     tag = ''
@@ -240,7 +236,6 @@ class Layer(AST):
                 Layer.cu_counter += 1
 
         super(Layer, self).__init__(code=code, name=name, type=type, hide=hide)
-
 
 class NetClass(AST):
     tag = 'net_class'
@@ -283,7 +278,6 @@ class NetClass(AST):
                                        diff_pair_width=diff_pair_width,
                                        diff_pair_gap=diff_pair_gap,
                                        nets=nets)
-
 
 class Zone(AST):
     tag = 'zone'
@@ -363,7 +357,6 @@ class Zone(AST):
                                    polygon=polygon, filled_polygon=filled_polygon,
                                    fill_segments=fill_segments)
 
-
 class Target(AST):
     tag = 'target'
     schema = {
@@ -384,7 +377,6 @@ class Target(AST):
                  layer='Edge.Cuts', tstamp=None):
         super(Target, self).__init__(shape=shape, at=at, size=size, width=width,
                                      layer=layer, tstamp=tstamp)
-
 
 class Dimension(AST):
     tag = 'dimension'
@@ -432,7 +424,6 @@ class Dimension(AST):
                                         arrow1a=arrow1a, arrow1b=arrow1b,
                                         arrow2a=arrow2a, arrow2b=arrow2b,
                                         tstamp=tstamp)
-
 
 class Setup(AST):
     tag = 'setup'
@@ -541,7 +532,6 @@ class Setup(AST):
                                     visible_elements=visible_elements,
                                     pcbplotparams=pcbplotparams)
 
-
 def comment(number):
     str_num = str(number)
     return {
@@ -551,7 +541,6 @@ def comment(number):
         '_printer': (lambda x: '(comment %s %s)' %
                      (str_num, tree_to_string(x)))
     }
-
 
 class Pcb(AST):
     tag = 'kicad_pcb'
@@ -756,26 +745,22 @@ class Pcb(AST):
 
     def elements_by_layer(self, layer):
         '''Returns a iterator of elements on layer.'''
-
         for elem in self.geometry():
             if elem.layer == layer:
                 yield elem
 
     def outline(self):
         '''Returns the outline of a pcb.'''
-
         return list(self.elements_by_layer('Edge.Cuts'))
 
     def module_by_reference(self, name):
         '''Returns a module called name.'''
-
         for module in self.modules:
             if module.name == name:
                 return module
 
     def net_by_code(self, code):
         '''Returns a net with code.'''
-
         for net in self.nets:
             if net.code == code:
                 return net
