@@ -78,6 +78,9 @@ def xy_schema(attr):
         }
     }
 
+###########################
+# Footprint components    #
+###########################
 class Net(AST):
     tag = 'net'
     schema = {
@@ -305,7 +308,6 @@ class Circle(AST):
 
     def flip(self):
         '''Flip a circle.'''
-
         self.layer = flip_layer(self.layer)
 
 
@@ -338,7 +340,6 @@ class Arc(AST):
 
     def flip(self):
         '''Flip an arc.'''
-
         self.layer = flip_layer(self.layer)
         raise NotImplementedError()
 
@@ -361,7 +362,6 @@ class Polygon(AST):
 
     def flip(self):
         '''Flip polygon.'''
-
         self.layer = flip_layer(self.layer)
         raise NotImplementedError()
 
@@ -411,7 +411,6 @@ class Curve(AST):
 
     def flip(self):
         '''Flip curve.'''
-
         self.layer = flip_layer(self.layer)
         raise NotImplementedError()
 
@@ -446,7 +445,6 @@ class Model(AST):
     def __init__(self, path, at, scale, rotate):
         super(Model, self).__init__(
             path=path, at=at, scale=scale, rotate=rotate)
-
 
 class Module(AST):
     tag = 'module'
@@ -507,6 +505,20 @@ class Module(AST):
             '_multiple': True
         }
     }
+    
+    @classmethod
+    def from_file(cls, path):
+        '''Returns parsed module at specified path'''
+        module = open(path, 'r', encoding='utf-8').read()
+        return cls.parse(module)
+
+    @classmethod
+    def from_library(cls, lib, name):
+        '''Returns parsed module with specified name from specified library'''
+        path = find_module(lib, name)
+        assert path is not None, \
+        "Footprint {0} in Library {1} Not Found!".format(name,lib)
+        return cls.from_file(find_module(lib, name))
 
     def __init__(self, name, version=None, locked=False, placed=False,
                  layer='F.Cu', tedit=None, tstamp=None, at=None,
@@ -546,7 +558,6 @@ class Module(AST):
         '''Returns a list of pads.
         The pads in the list may be in an arbitrary order, or be
         non-consecutive. Multiple pads can have the same name.'''
-
         pads = []
         for pad in self.pads:
             if pad.name == name:
@@ -557,7 +568,6 @@ class Module(AST):
         '''Change the reference/identifier of a module.
         Aside from changing the name, we also need to update the
         textual elements of type 'reference'.'''
-
         self.name = name
         for text in self.texts:
             if text.type == 'reference':
@@ -566,7 +576,6 @@ class Module(AST):
     def set_value(self, value):
         '''Change the value of a module.
         Updates all textual elements of type 'value'.'''
-
         for text in self.texts:
             if text.type == 'value':
                 text.text = value
@@ -579,26 +588,22 @@ class Module(AST):
 
     def elements_by_layer(self, layer):
         '''Returns a iterator of elements on layer.'''
-
         for elem in self.geometry():
             if elem.layer == layer:
                 yield elem
 
     def courtyard(self):
         '''Returns the courtyard elements of a module.'''
-
         return list(self.elements_by_layer(self.layer.split('.')[0] + '.CrtYd'))
 
     def place(self, x, y):
         '''Sets the x and y coordinates of the module.'''
-
         self.at[0] = x
         self.at[1] = y
 
     def rotate(self, angle):
         '''Rotates the module by an angle.
         Also applies rotation to all text elements and pads.'''
-
         if len(self.at) > 2:
             self.at[2] += angle
         else:
@@ -612,7 +617,6 @@ class Module(AST):
 
     def connect(self, pad, net):
         '''Sets the net on all pads called :data:pad.'''
-
         for pad in self.pads_by_name(pad):
             pad.net = net
 
@@ -625,11 +629,3 @@ class Module(AST):
         for elem in self.geometry():
             elem.flip()
 
-    @classmethod
-    def from_file(cls, path):
-        module = open(path, 'r', encoding='utf-8').read()
-        return cls.parse(module)
-
-    @classmethod
-    def from_library(cls, lib, name):
-        return cls.from_file(find_module(lib, name))
