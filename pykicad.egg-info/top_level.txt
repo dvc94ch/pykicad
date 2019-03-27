@@ -1,2 +1,0 @@
-pykicad
-tests
