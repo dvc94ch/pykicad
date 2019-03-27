@@ -202,10 +202,13 @@ class Pad(AST):
     def flip(self):
         '''Flip a pad.'''
 
+        # Flip layer
         self.layers = [flip_layer(layer) for layer in self.layers]
+
+        # Invert y axis
         self.at[1] = -self.at[1]
-        if len(self.at) > 2:
-            self.at[2] = -self.at[2]
+        # if len(self.at) > 2:
+        #     self.at[2] = -self.at[2]
 
 
 class Text(AST):
@@ -318,6 +321,8 @@ class Circle(AST):
     def flip(self):
         '''Flip a circle.'''
         self.layer = flip_layer(self.layer)
+        self.center[1] = -self.center[1]
+        self.end[1] = -self.end[1]
 
 
 class Arc(AST):
@@ -455,6 +460,7 @@ class Model(AST):
         super(self.__class__, self).__init__(
             path=path, at=at, scale=scale, rotate=rotate)
 
+
 class Module(AST):
     tag = 'module'
     schema = {
@@ -537,7 +543,7 @@ class Module(AST):
                  solder_paste_ratio=None, clearance=None,
                  zone_connect=None, thermal_width=None, thermal_gap=None,
                  texts=None, lines=None, circles=None, arcs=None, curves=None,
-                 polygons=None, pads=None, model=None):
+                 polygons=None, pads=None, model=None, rotation=0):
 
         at = self.init_list(at, [0, 0])
         pads = self.init_list(pads, [])
@@ -549,19 +555,19 @@ class Module(AST):
         polygons = self.init_list(polygons, [])
 
         super(self.__class__, self).__init__(name=name, version=version, locked=locked,
-                                     placed=placed, layer=layer, tedit=tedit,
-                                     tstamp=tstamp, at=at, descr=descr,
-                                     tags=tags, path=path, attr=attr,
-                                     autoplace_cost90=autoplace_cost90,
-                                     autoplace_cost180=autoplace_cost180,
-                                     solder_mask_margin=solder_mask_margin,
-                                     solder_paste_margin=solder_paste_margin,
-                                     solder_paste_ratio=solder_paste_ratio,
-                                     clearance=clearance, zone_connect=zone_connect,
-                                     thermal_width=thermal_width, thermal_gap=thermal_gap,
-                                     texts=texts, lines=lines, circles=circles,
-                                     arcs=arcs, curves=curves, polygons=polygons,
-                                     pads=pads, model=model)
+                                             placed=placed, layer=layer, tedit=tedit,
+                                             tstamp=tstamp, at=at, descr=descr,
+                                             tags=tags, path=path, attr=attr,
+                                             autoplace_cost90=autoplace_cost90,
+                                             autoplace_cost180=autoplace_cost180,
+                                             solder_mask_margin=solder_mask_margin,
+                                             solder_paste_margin=solder_paste_margin,
+                                             solder_paste_ratio=solder_paste_ratio,
+                                             clearance=clearance, zone_connect=zone_connect,
+                                             thermal_width=thermal_width, thermal_gap=thermal_gap,
+                                             texts=texts, lines=lines, circles=circles,
+                                             arcs=arcs, curves=curves, polygons=polygons,
+                                             pads=pads, model=model, rotation=rotation)
 
     def pads_by_name(self, name):
         '''Returns a list of pads.
@@ -613,6 +619,14 @@ class Module(AST):
     def rotate(self, angle):
         '''Rotates the module by an angle.
         Also applies rotation to all text elements and pads.'''
+
+        # Update component rotation
+        self.rotation = angle
+
+        # Flip rotation if this component is on the bottom
+        if 'B.Cu' in self.layer:
+            angle = -angle
+
         if len(self.at) > 2:
             self.at[2] += angle
         else:
@@ -630,6 +644,7 @@ class Module(AST):
             pad.net = net
 
     def flip(self):
+        self.rotate(-2 * self.rotation)
         self.layer = flip_layer(self.layer)
         for pad in self.pads:
             pad.flip()
