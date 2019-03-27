@@ -1,5 +1,9 @@
 from pykicad.sexpr import *
 from pykicad.module import Module, Net, xy_schema
+from pykicad.sexpr import number, text, integer, boolean, flag, Optional
+from pykicad.sexpr import tuple_parser, AST, Literal, Group, OneOrMore
+from pykicad.sexpr import allowed, extend_schema, extend_schema, yes_no
+from pykicad.sexpr import Suppress, tree_to_string
 
 
 class Segment(AST):
@@ -16,7 +20,7 @@ class Segment(AST):
 
     def __init__(self, start, end, net, width=None, layer='F.Cu',
                  tstamp=None, status=None):
-        super(Segment, self).__init__(start=start, end=end, width=width,
+        super(self.__class__, self).__init__(start=start, end=end, width=width,
                                       layer=layer, net=net, tstamp=tstamp,
                                       status=status)
 
@@ -50,7 +54,7 @@ class GrText(AST):
     def __init__(self, text, at, layer='F.SilkS', size=None, thickness=None,
                  bold=False, italic=False, justify=None, hide=False, tstamp=None):
 
-        super(GrText, self).__init__(text=text, at=at, layer=layer, size=size,
+        super(self.__class__, self).__init__(text=text, at=at, layer=layer, size=size,
                                      thickness=thickness, bold=bold, italic=italic,
                                      justify=justify, hide=hide, tstamp=tstamp)
 
@@ -74,7 +78,7 @@ class GrLine(AST):
 
     def __init__(self, start, end, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(GrLine, self).__init__(start=start, end=end, layer=layer, width=width,
+        super(self.__class__, self).__init__(start=start, end=end, layer=layer, width=width,
                                      tstamp=tstamp, status=status)
 
 
@@ -98,7 +102,7 @@ class GrArc(AST):
 
     def __init__(self, start, end, angle, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(GrArc, self).__init__(start=start, end=end, angle=angle, layer=layer,
+        super(self.__class__, self).__init__(start=start, end=end, angle=angle, layer=layer,
                                     width=width, tstamp=tstamp, status=status)
 
 
@@ -121,8 +125,9 @@ class GrCircle(AST):
 
     def __init__(self, center, end, layer='Edge.Cuts', width=None,
                  tstamp=None, status=None):
-        super(GrCircle, self).__init__(center=center, end=end, layer=layer,
+        super(self.__class__, self).__init__(center=center, end=end, layer=layer,
                                        width=width, tstamp=tstamp, status=status)
+
 
 class GrPolygon(AST):
     tag = 'gr_poly'
@@ -137,8 +142,9 @@ class GrPolygon(AST):
     }
 
     def __init__(self, pts, layer='Edge.Cuts', width=None, tstamp=None, status=None):
-        super(GrPolygon, self).__init__(pts=pts, layer=layer, width=width,
+        super(self.__class__, self).__init__(pts=pts, layer=layer, width=width,
                                         tstamp=tstamp, status=status)
+
 
 class GrCurve(AST):
     tag = 'gr_curve'
@@ -179,9 +185,10 @@ class GrCurve(AST):
 
     def __init__(self, start, bezier1, bezier2, end, layer='Edge.Cuts',
                  width=None, tstamp=None, status=None):
-        super(GrCurve, self).__init__(start=start, bezier1=bezier1,
+        super(self.__class__, self).__init__(start=start, bezier1=bezier1,
                                       bezier2=bezier2, end=end, layer=layer,
                                       width=width, tstamp=tstamp, status=status)
+
 
 class Via(AST):
     tag = 'via'
@@ -202,9 +209,10 @@ class Via(AST):
 
         layers = self.init_list(layers, ['F.Cu', 'B.Cu'])
 
-        super(Via, self).__init__(micro=micro, blind=blind, at=at, size=size,
+        super(self.__class__, self).__init__(micro=micro, blind=blind, at=at, size=size,
                                   drill=drill, layers=layers, net=net,
                                   tstamp=tstamp, status=status)
+
 
 class Layer(AST):
     tag = ''
@@ -235,7 +243,8 @@ class Layer(AST):
                 code = Layer.cu_counter
                 Layer.cu_counter += 1
 
-        super(Layer, self).__init__(code=code, name=name, type=type, hide=hide)
+        super(self.__class__, self).__init__(code=code, name=name, type=type, hide=hide)
+
 
 class NetClass(AST):
     tag = 'net_class'
@@ -271,13 +280,14 @@ class NetClass(AST):
 
         nets = self.init_list(nets, [])
 
-        super(NetClass, self).__init__(name=name, description=description,
+        super(self.__class__, self).__init__(name=name, description=description,
                                        clearance=clearance, trace_width=trace_width,
                                        via_dia=via_dia, via_drill=via_drill,
                                        uvia_dia=uvia_dia, uvia_drill=uvia_drill,
                                        diff_pair_width=diff_pair_width,
                                        diff_pair_gap=diff_pair_gap,
                                        nets=nets)
+
 
 class Zone(AST):
     tag = 'zone'
@@ -342,20 +352,21 @@ class Zone(AST):
                  keepout_copperpour=None, polygon=None, filled_polygon=None,
                  fill_segments=None):
 
-        super(Zone, self).__init__(net=net, net_name=net_name, layer=layer,
-                                   tstamp=tstamp, hatch_type=hatch_type,
-                                   hatch_size=hatch_size, priority=priority,
-                                   connect_pads=connect_pads, clearance=clearance,
-                                   min_thickness=min_thickness, fill=fill,
-                                   fill_mode=fill_mode, arc_segments=arc_segments,
-                                   thermal_gap=thermal_gap,
-                                   thermal_bridge_width=thermal_bridge_width,
-                                   smoothing=smoothing, radius=radius,
-                                   keepout_tracks=keepout_tracks,
-                                   keepout_vias=keepout_vias,
-                                   keepout_copperpour=keepout_copperpour,
-                                   polygon=polygon, filled_polygon=filled_polygon,
-                                   fill_segments=fill_segments)
+        super(self.__class__, self).__init__(net=net, net_name=net_name, layer=layer,
+                                             tstamp=tstamp, hatch_type=hatch_type,
+                                             hatch_size=hatch_size, priority=priority,
+                                             connect_pads=connect_pads, clearance=clearance,
+                                             min_thickness=min_thickness, fill=fill,
+                                             fill_mode=fill_mode, arc_segments=arc_segments,
+                                             thermal_gap=thermal_gap,
+                                             thermal_bridge_width=thermal_bridge_width,
+                                             smoothing=smoothing, radius=radius,
+                                             keepout_tracks=keepout_tracks,
+                                             keepout_vias=keepout_vias,
+                                             keepout_copperpour=keepout_copperpour,
+                                             polygon=polygon, filled_polygon=filled_polygon,
+                                             fill_segments=fill_segments)
+
 
 class Target(AST):
     tag = 'target'
@@ -375,8 +386,9 @@ class Target(AST):
 
     def __init__(self, shape, at, size=None, width=None,
                  layer='Edge.Cuts', tstamp=None):
-        super(Target, self).__init__(shape=shape, at=at, size=size, width=width,
+        super(self.__class__, self).__init__(shape=shape, at=at, size=size, width=width,
                                      layer=layer, tstamp=tstamp)
+
 
 class Dimension(AST):
     tag = 'dimension'
@@ -418,12 +430,92 @@ class Dimension(AST):
     def __init__(self, value, width, layer='F.SilkS', text=None, feature1=None,
                  feature2=None, crossbar=None, arrow1a=None, arrow1b=None,
                  arrow2a=None, arrow2b=None, tstamp=None):
-        super(Dimension, self).__init__(value=value, width=width, layer=layer,
+        super(self.__class__, self).__init__(value=value, width=width, layer=layer,
                                         text=text, feature1=feature1,
                                         feature2=feature2, crossbar=crossbar,
                                         arrow1a=arrow1a, arrow1b=arrow1b,
                                         arrow2a=arrow2a, arrow2b=arrow2b,
                                         tstamp=tstamp)
+
+
+class PcbPlotParams(AST):
+    tag = 'pcbplotparams'
+    schema = {
+                'layerselection': text,
+                'usegerberextensions': boolean('usegerberextensions'),
+                'excludeedgelayer': boolean('excludeedgelayer'),
+                'linewidth': number,
+                'plotframeref': boolean('plotframeref'),
+                'viasonmask': boolean('viasonmask'),
+                'mode': integer,
+                'useauxorigin': boolean('useauxorigin'),
+                'hpglpennumber': integer,
+                'hpglpenspeed': integer,
+                'hpglpendiameter': integer,
+                'psnegative': boolean('psnegative'),
+                'psa4output': boolean('psa4output'),
+                'plotreference': boolean('plotreference'),
+                'plotvalue': boolean('plotvalue'),
+                'plotinvisibletext': boolean('plotinvisibletext'),
+                'padsonsilk': boolean('padsonsilk'),
+                'subtractmaskfromsilk': boolean('subtractmaskfromsilk'),
+                'outputformat': integer,
+                'mirror': boolean('mirror'),
+                'drillshape': integer,
+                'scaleselection': integer,
+                'outputdirectory': text
+            }
+
+    def __init__(self,
+                 layerselection=None,
+                 usegerberextensions=None,
+                 excludeedgelayer=None,
+                 linewidth=None,
+                 plotframeref=None,
+                 viasonmask=None,
+                 mode=None,
+                 useauxorigin=None,
+                 hpglpennumber=None,
+                 hpglpenspeed=None,
+                 hpglpendiameter=None,
+                 psnegative=None,
+                 psa4output=None,
+                 plotreference=None,
+                 plotvalue=None,
+                 plotinvisibletext=None,
+                 padsonsilk=None,
+                 subtractmaskfromsilk=None,
+                 outputformat=None,
+                 mirror=None,
+                 drillshape=None,
+                 scaleselection=None,
+                 outputdirectory=None
+                 ):
+
+                    super(PcbPlotParams, self).__init__(layerselection=layerselection,
+                                                        usegerberextensions=usegerberextensions,
+                                                        excludeedgelayer=excludeedgelayer,
+                                                        linewidth=linewidth,
+                                                        plotframeref=plotframeref,
+                                                        viasonmask=viasonmask,
+                                                        mode=mode,
+                                                        useauxorigin=useauxorigin,
+                                                        hpglpennumber=hpglpennumber,
+                                                        hpglpenspeed=hpglpenspeed,
+                                                        hpglpendiameter=hpglpendiameter,
+                                                        psnegative=psnegative,
+                                                        psa4output=psa4output,
+                                                        plotreference=plotreference,
+                                                        plotvalue=plotvalue,
+                                                        plotinvisibletext=plotinvisibletext,
+                                                        padsonsilk=padsonsilk,
+                                                        subtractmaskfromsilk=subtractmaskfromsilk,
+                                                        outputformat=outputformat,
+                                                        mirror=mirror,
+                                                        drillshape=drillshape,
+                                                        scaleselection=scaleselection,
+                                                        outputdirectory=outputdirectory)
+
 
 class Setup(AST):
     tag = 'setup'
@@ -462,36 +554,15 @@ class Setup(AST):
         'aux_axis_origin': number + number,
         'visible_elements': hex,
         'pcbplotparams': {
-            'layerselection': text,
-            'usegerberextensions': boolean('usegerberextensions'),
-            'excludeedgelayer': boolean('excludeedgelayer'),
-            'linewidth': number,
-            'plotframeref': boolean('plotframeref'),
-            'viasonmask': boolean('viasonmask'),
-            'mode': integer,
-            'useauxorigin': boolean('useauxorigin'),
-            'hpglpennumber': integer,
-            'hpglpenspeed': integer,
-            'hpglpendiameter': integer,
-            'psnegative': boolean('psnegative'),
-            'psa4output': boolean('psa4output'),
-            'plotreference': boolean('plotreference'),
-            'plotvalue': boolean('plotvalue'),
-            'plotinvisibletext': boolean('plotinvisibletext'),
-            'padsonsilk': boolean('padsonsilk'),
-            'subtractmaskfromsilk': boolean('subtractmaskfromsilk'),
-            'outputformat': integer,
-            'mirror': boolean('mirror'),
-            'drillshape': integer,
-            'scaleselection': integer,
-            'outputdirectory': text
-        },
+            '_parser': PcbPlotParams,
+            '_multiple': True
+        }
     }
 
-    def __init__(self, user_trace_width=None, trace_clearance=None,
+    def __init__(self, last_trace_width=None, user_trace_width=None, trace_clearance=None,
                  zone_clearance=None, zone_45_only=None, trace_min=None,
-                 segment_width=None, edge_width=None, via_size=None,
-                 via_min_size=None, via_min_drill=None, user_via=None,
+                 segment_width=None, edge_width=None, via_size=None, aux_axis_origin=None,
+                 via_min_size=None, via_min_drill=None, user_via=None, via_drill=None,
                  uvia_size=None, uvia_drill=None, uvias_allowed=None,
                  blind_buried_vias_allowed=None, uvia_min_size=None,
                  uvia_min_drill=None, pcb_text_width=None, pcb_text_size=None,
@@ -500,7 +571,8 @@ class Setup(AST):
                  solder_mask_min_width=None, pad_to_paste_clearance=None,
                  pad_to_paste_clearance_ratio=None, grid_origin=None,
                  visible_elements=None, pcbplotparams=None):
-        super(Setup, self).__init__(user_trace_width=user_trace_width,
+        super(self.__class__, self).__init__(last_trace_width=last_trace_width,
+                                    user_trace_width=user_trace_width,
                                     trace_clearance=trace_clearance,
                                     zone_clearance=zone_clearance,
                                     zone_45_only=zone_45_only,
@@ -508,6 +580,8 @@ class Setup(AST):
                                     segment_width=segment_width,
                                     edge_width=edge_width,
                                     via_size=via_size,
+                                    aux_axis_origin=aux_axis_origin,
+                                    via_drill=via_drill,
                                     via_min_size=via_min_size,
                                     via_min_drill=via_min_drill,
                                     user_via=user_via,
@@ -532,6 +606,7 @@ class Setup(AST):
                                     visible_elements=visible_elements,
                                     pcbplotparams=pcbplotparams)
 
+
 def comment(number):
     str_num = str(number)
     return {
@@ -541,6 +616,7 @@ def comment(number):
         '_printer': (lambda x: '(comment %s %s)' %
                      (str_num, tree_to_string(x)))
     }
+
 
 class Pcb(AST):
     tag = 'kicad_pcb'
@@ -641,6 +717,10 @@ class Pcb(AST):
             '_multiple': True,
             '_optional': True
         },
+        'setup': {
+            '_parser': Setup,
+            '_multiple': True
+        },
         'net_classes': {
             '_parser': NetClass,
             '_multiple': True
@@ -723,7 +803,7 @@ class Pcb(AST):
         targets = self.init_list(targets, [])
         dimensions = self.init_list(dimensions, [])
 
-        super(Pcb, self).__init__(version=version, host=host,
+        super(self.__class__, self).__init__(version=version, host=host,
                                   board_thickness=board_thickness,
                                   num_nets=num_nets, num_no_connects=num_no_connects,
                                   title=title, date=date, rev=rev, company=company,

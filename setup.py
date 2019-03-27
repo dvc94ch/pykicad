@@ -1,8 +1,8 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name='pykicad',
-    packages=['pykicad'],
+    packages=find_packages(),
     version='0.1.1',
     description='Library for working with KiCAD file formats',
     long_description=open('README.md').read(),
