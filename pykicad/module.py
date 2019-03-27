@@ -13,9 +13,11 @@ MODULE_SEARCH_PATH = 'KISYSMOD'
 def find_library(library):
     '''Returns full path of specified library'''
     for path in os.environ.get(MODULE_SEARCH_PATH).split(os.pathsep):
+
         full_path = os.path.join(path, library + '.pretty')
         if os.path.isdir(full_path):
             return full_path
+
 
 def find_module(library, module):
     '''Returns full path of specified module'''
@@ -24,6 +26,7 @@ def find_module(library, module):
         full_path = os.path.join(path, full_name)
         if os.path.isfile(full_path):
             return full_path
+
 
 def list_libraries():
     '''Returns all footprint libraries'''
@@ -34,6 +37,7 @@ def list_libraries():
                 libraries.append('.'.join(lib.split('.')[0:-1]))
     return libraries
 
+
 def list_modules(library):
     '''Returns all modules in specific library'''
     modules = []
@@ -42,10 +46,12 @@ def list_modules(library):
             modules.append('.'.join(file.split('.')[0:-1]))
     return modules
 
+
 def filter_by_regex(alist, regex):
     '''Filter a list of strings using a regular expression'''
     regex = re.compile(regex)
     return [x for x in alist if regex.match(x)]
+
 
 def list_all_modules():
     '''Returns all modules in all libraries'''
@@ -54,15 +60,17 @@ def list_all_modules():
         modules += list_modules(lib)
     return modules
 
+
 def flip_layer(layer):
     '''
     Flips from front to back layer
     Returns nothing if not on front or back layer
     '''
-    if filter_by_regex([layer],"^[FB].[a-zA-Z]{1,}$"):
+    if filter_by_regex([layer], "^[FB].[a-zA-Z]{1,}$"):
         side, layer = layer.split('.')
         side = 'B' if side == 'F' else 'B'
         return side + '.' + layer
+
 
 ###########################
 # AST methods             #
@@ -77,6 +85,7 @@ def xy_schema(attr):
             '_multiple': True
         }
     }
+
 
 ###########################
 # Footprint components    #
@@ -100,7 +109,7 @@ class Net(AST):
             code = Net.counter
             Net.counter += 1
 
-        super(Net, self).__init__(code=code, name=name)
+        super(self.__class__, self).__init__(code=code, name=name)
 
 class Drill(AST):
     tag = 'drill'
@@ -117,7 +126,7 @@ class Drill(AST):
     }
 
     def __init__(self, size, offset=None):
-        super(Drill, self).__init__(size=size, offset=offset)
+        super(self.__class__, self).__init__(size=size, offset=offset)
 
 
 class Pad(AST):
@@ -159,7 +168,7 @@ class Pad(AST):
         at = self.init_list(at, [0, 0])
         layers = self.init_list(layers, ['F.Cu'])
 
-        super(Pad, self).__init__(name=name, type=type, shape=shape, size=size,
+        super(self.__class__, self).__init__(name=name, type=type, shape=shape, size=size,
                                   at=at, rect_delta=rect_delta,
                                   roundrect_rratio=roundrect_rratio,
                                   layers=layers, drill=drill, clearance=clearance,
@@ -233,7 +242,7 @@ class Text(AST):
                  size=None, thickness=None, bold=False, italic=False,
                  justify=None, hide=False, tstamp=None):
 
-        super(Text, self).__init__(type=type, text=text, at=at, layer=layer,
+        super(self.__class__, self).__init__(type=type, text=text, at=at, layer=layer,
                                    size=size, thickness=thickness, bold=bold,
                                    italic=italic, justify=justify, hide=hide,
                                    tstamp=tstamp)
@@ -273,7 +282,7 @@ class Line(AST):
 
     def __init__(self, start, end, layer='F.SilkS', width=None, tstamp=None,
                  status=None):
-        super(Line, self).__init__(start=start, end=end, layer=layer,
+        super(self.__class__, self).__init__(start=start, end=end, layer=layer,
                                    width=width, tstamp=tstamp, status=status)
 
     def flip(self):
@@ -303,7 +312,7 @@ class Circle(AST):
 
     def __init__(self, center, end, layer='F.SilkS', width=None, tstamp=None,
                  status=None):
-        super(Circle, self).__init__(center=center, end=end, layer=layer,
+        super(self.__class__, self).__init__(center=center, end=end, layer=layer,
                                      width=width, tstamp=tstamp, status=status)
 
     def flip(self):
@@ -334,7 +343,7 @@ class Arc(AST):
 
     def __init__(self, start, end, angle, layer='F.SilkS', width=None,
                  tstamp=None, status=None):
-        super(Arc, self).__init__(start=start, end=end, angle=angle,
+        super(self.__class__, self).__init__(start=start, end=end, angle=angle,
                                   layer=layer, width=width, tstamp=tstamp,
                                   status=status)
 
@@ -357,7 +366,7 @@ class Polygon(AST):
     }
 
     def __init__(self, pts, layer='F.SilkS', width=None, tstamp=None, status=None):
-        super(Polygon, self).__init__(pts=pts, layer=layer, width=width,
+        super(self.__class__, self).__init__(pts=pts, layer=layer, width=width,
                                       tstamp=tstamp, status=status)
 
     def flip(self):
@@ -405,7 +414,7 @@ class Curve(AST):
 
     def __init__(self, start, bezier1, bezier2, end, layer='F.SilkS',
                  width=None, tstamp=None, status=None):
-        super(Curve, self).__init__(start=start, bezier1=bezier1,
+        super(self.__class__, self).__init__(start=start, bezier1=bezier1,
                                     bezier2=bezier2, end=end, layer=layer,
                                     width=width, tstamp=tstamp, status=status)
 
@@ -443,7 +452,7 @@ class Model(AST):
     }
 
     def __init__(self, path, at, scale, rotate):
-        super(Model, self).__init__(
+        super(self.__class__, self).__init__(
             path=path, at=at, scale=scale, rotate=rotate)
 
 class Module(AST):
@@ -505,7 +514,7 @@ class Module(AST):
             '_multiple': True
         }
     }
-    
+
     @classmethod
     def from_file(cls, path):
         '''Returns parsed module at specified path'''
@@ -539,7 +548,7 @@ class Module(AST):
         curves = self.init_list(curves, [])
         polygons = self.init_list(polygons, [])
 
-        super(Module, self).__init__(name=name, version=version, locked=locked,
+        super(self.__class__, self).__init__(name=name, version=version, locked=locked,
                                      placed=placed, layer=layer, tedit=tedit,
                                      tstamp=tstamp, at=at, descr=descr,
                                      tags=tags, path=path, attr=attr,
@@ -628,4 +637,3 @@ class Module(AST):
             text.flip()
         for elem in self.geometry():
             elem.flip()
-

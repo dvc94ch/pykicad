@@ -1,2 +1,3 @@
-import pykicad.pcb
-import pykicad.module
+from .pcb import *
+from .module import *
+from . import sexpr
