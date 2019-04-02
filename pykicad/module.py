@@ -5,6 +5,7 @@ import sys
 import copy
 from io import open
 from pykicad.sexpr import *
+from pykicad.utility import *
 
 # Cache initial module text
 cached_modules = {}
@@ -271,7 +272,6 @@ class Text(AST):
 
     def rotate(self, angle):
         '''Rotates a textual element by an angle.'''
-
         if len(self.at) > 2:
             self.at[2] += angle
         else:
@@ -279,7 +279,6 @@ class Text(AST):
 
     def flip(self):
         '''Flip a textual element.'''
-
         self.layer = flip_layer(self.layer)
         self.at[1] = -self.at[1]
         self.justify = 'mirror' if not self.justify == 'mirror' else None
@@ -657,6 +656,11 @@ class Module(AST):
     def courtyard(self):
         '''Returns the courtyard elements of a module.'''
         return list(self.elements_by_layer(self.layer.split('.')[0] + '.CrtYd'))
+
+    def translate(self, disp_x, disp_y):
+        '''Translates module in x and y.'''
+        self.at[0] = self.at[0] + disp_x
+        self.at[1] = self.at[1] + disp_y
 
     def place(self, x, y):
         '''Sets the x and y coordinates of the module.'''
