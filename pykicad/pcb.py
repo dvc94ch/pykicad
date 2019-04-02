@@ -697,7 +697,7 @@ class Pcb(AST):
 
     def __init__(self, version=1, host=['pykicad', 'x.x.x'],
                  board_thickness=None, board_area=None,
-                 num_nets=None, num_no_connects=None, num_tracks=None,
+                 num_nets=0, num_no_connects=None, num_tracks=None,
                  num_zones=None, num_modules=None, num_drawings=None,
                  num_links=None, title=None, date=None, rev=None, company=None,
                  comment1=None, comment2=None, comment3=None, comment4=None,
