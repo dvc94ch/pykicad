@@ -572,39 +572,39 @@ class Setup(AST):
                  pad_to_paste_clearance_ratio=None, grid_origin=None,
                  visible_elements=None, pcbplotparams=None):
         super(self.__class__, self).__init__(last_trace_width=last_trace_width,
-                                    user_trace_width=user_trace_width,
-                                    trace_clearance=trace_clearance,
-                                    zone_clearance=zone_clearance,
-                                    zone_45_only=zone_45_only,
-                                    trace_min=trace_min,
-                                    segment_width=segment_width,
-                                    edge_width=edge_width,
-                                    via_size=via_size,
-                                    aux_axis_origin=aux_axis_origin,
-                                    via_drill=via_drill,
-                                    via_min_size=via_min_size,
-                                    via_min_drill=via_min_drill,
-                                    user_via=user_via,
-                                    uvia_size=uvia_size,
-                                    uvia_drill=uvia_drill,
-                                    uvias_allowed=uvias_allowed,
-                                    blind_buried_vias_allowed=blind_buried_vias_allowed,
-                                    uvia_min_size=uvia_min_size,
-                                    uvia_min_drill=uvia_min_drill,
-                                    pcb_text_width=pcb_text_width,
-                                    pcb_text_size=pcb_text_size,
-                                    mod_edge_width=mod_edge_width,
-                                    mod_text_size=mod_text_size,
-                                    mod_text_width=mod_text_width,
-                                    pad_size=pad_size,
-                                    pad_drill=pad_drill,
-                                    pad_to_mask_clearance=pad_to_mask_clearance,
-                                    solder_mask_min_width=solder_mask_min_width,
-                                    pad_to_paste_clearance=pad_to_paste_clearance,
-                                    pad_to_paste_clearance_ratio=pad_to_paste_clearance_ratio,
-                                    grid_origin=grid_origin,
-                                    visible_elements=visible_elements,
-                                    pcbplotparams=pcbplotparams)
+                                             user_trace_width=user_trace_width,
+                                             trace_clearance=trace_clearance,
+                                             zone_clearance=zone_clearance,
+                                             zone_45_only=zone_45_only,
+                                             trace_min=trace_min,
+                                             segment_width=segment_width,
+                                             edge_width=edge_width,
+                                             via_size=via_size,
+                                             aux_axis_origin=aux_axis_origin,
+                                             via_drill=via_drill,
+                                             via_min_size=via_min_size,
+                                             via_min_drill=via_min_drill,
+                                             user_via=user_via,
+                                             uvia_size=uvia_size,
+                                             uvia_drill=uvia_drill,
+                                             uvias_allowed=uvias_allowed,
+                                             blind_buried_vias_allowed=blind_buried_vias_allowed,
+                                             uvia_min_size=uvia_min_size,
+                                             uvia_min_drill=uvia_min_drill,
+                                             pcb_text_width=pcb_text_width,
+                                             pcb_text_size=pcb_text_size,
+                                             mod_edge_width=mod_edge_width,
+                                             mod_text_size=mod_text_size,
+                                             mod_text_width=mod_text_width,
+                                             pad_size=pad_size,
+                                             pad_drill=pad_drill,
+                                             pad_to_mask_clearance=pad_to_mask_clearance,
+                                             solder_mask_min_width=solder_mask_min_width,
+                                             pad_to_paste_clearance=pad_to_paste_clearance,
+                                             pad_to_paste_clearance_ratio=pad_to_paste_clearance_ratio,
+                                             grid_origin=grid_origin,
+                                             visible_elements=visible_elements,
+                                             pcbplotparams=pcbplotparams)
 
 
 def comment(number):
@@ -839,10 +839,38 @@ class Pcb(AST):
             if module.name == name:
                 return module
 
+    def extent(self, padding=5):
+        min_pos = 1e8, 1e8
+        max_pos = -1e8, -1e8
+        for item in self.outline():
+            min_pos = [min(dim, mp) for dim, mp in zip(item.start, min_pos)]
+            min_pos = [min(dim, mp) for dim, mp in zip(item.end, min_pos)]
+
+            max_pos = [max(dim, mp) for dim, mp in zip(item.start, max_pos)]
+            max_pos = [max(dim, mp) for dim, mp in zip(item.end, max_pos)]
+
+        min_pos = [pos - padding for pos in min_pos]
+        max_pos = [pos + padding for pos in max_pos]
+
+        # Generate list of four corners
+        coords = []
+        coords += [[min_pos[0], min_pos[1]]]
+        coords += [[min_pos[0], max_pos[1]]]
+        coords += [[max_pos[0], max_pos[1]]]
+        coords += [[max_pos[0], min_pos[1]]]
+
+        return coords
+
     def net_by_code(self, code):
         '''Returns a net with code.'''
         for net in self.nets:
             if net.code == code:
+                return net
+
+    def net_by_name(self, name):
+        '''Returns a net with label.'''
+        for net in self.nets:
+            if net.name == name:
                 return net
 
     def to_file(self, path):

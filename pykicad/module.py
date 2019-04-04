@@ -2,8 +2,12 @@ import os
 import os.path
 import re
 import sys
+import copy
 from io import open
 from pykicad.sexpr import *
+
+# Cache initial module text
+cached_modules = {}
 
 MODULE_SEARCH_PATH = 'KISYSMOD'
 
@@ -169,14 +173,14 @@ class Pad(AST):
         layers = self.init_list(layers, ['F.Cu'])
 
         super(self.__class__, self).__init__(name=name, type=type, shape=shape, size=size,
-                                  at=at, rect_delta=rect_delta,
-                                  roundrect_rratio=roundrect_rratio,
-                                  layers=layers, drill=drill, clearance=clearance,
-                                  net=net, die_length=die_length,
-                                  solder_mask_margin=solder_mask_margin,
-                                  solder_paste_margin=solder_paste_margin,
-                                  solder_paste_margin_ratio=solder_paste_margin_ratio,
-                                  zone_connect=zone_connect)
+                                             at=at, rect_delta=rect_delta,
+                                             roundrect_rratio=roundrect_rratio,
+                                             layers=layers, drill=drill, clearance=clearance,
+                                             net=net, die_length=die_length,
+                                             solder_mask_margin=solder_mask_margin,
+                                             solder_paste_margin=solder_paste_margin,
+                                             solder_paste_margin_ratio=solder_paste_margin_ratio,
+                                             zone_connect=zone_connect)
 
     def is_valid(self):
         if self.shape == 'trapezoid' and self.rect_delta is None:
@@ -462,6 +466,7 @@ class Model(AST):
 
 
 class Module(AST):
+    cached_modules = {}
     tag = 'module'
     schema = {
         '0': {
@@ -522,17 +527,29 @@ class Module(AST):
     }
 
     @classmethod
+    def clear_cache(cls):
+        cls.cached_modules = {}
+
+    @classmethod
     def from_file(cls, path):
         '''Returns parsed module at specified path'''
-        module = open(path, 'r', encoding='utf-8').read()
-        return cls.parse(module)
+
+        # Load module if it's not cached
+        if path not in cls.cached_modules:
+            module = open(path, 'r', encoding='utf-8').read()
+            module = cls.parse(module)
+            cls.cached_modules[path] = copy.deepcopy(module)
+        else:
+            module = copy.deepcopy(cls.cached_modules[path])
+
+        return module
 
     @classmethod
     def from_library(cls, lib, name):
         '''Returns parsed module with specified name from specified library'''
         path = find_module(lib, name)
         assert path is not None, \
-        "Footprint {0} in Library {1} Not Found!".format(name,lib)
+        "Footprint {0} in Library {1} Not Found!".format(name, lib)
         return cls.from_file(find_module(lib, name))
 
     def __init__(self, name, version=None, locked=False, placed=False,
