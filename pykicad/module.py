@@ -142,11 +142,11 @@ class Pad(AST):
         },
         '1': {
             '_attr': 'type',
-            '_parser': Literal('smd') | 'thru_hole' | 'np_thru_hole' | 'connect'
+            '_parser': Keyword('smd') | 'thru_hole' | 'np_thru_hole' | 'connect'
         },
         '2': {
             '_attr': 'shape',
-            '_parser': Literal('circle') | 'rect' | 'roundrect' | 'oval' | 'trapezoid'
+            '_parser': Keyword('circle') | 'rect' | 'roundrect' | 'oval' | 'trapezoid'
         },
         'size': number + number,
         'at': number + number + Optional(number),
@@ -220,7 +220,7 @@ class Text(AST):
     schema = {
         '0': {
             '_attr': 'type',
-            '_parser': Literal('reference') | 'value' | 'user'
+            '_parser': Keyword('reference') | 'value' | 'user'
         },
         '1': {
             '_attr': 'text',
@@ -238,7 +238,7 @@ class Text(AST):
                 'bold': flag('bold'),
                 'italic': flag('italic')
             },
-            'justify': Literal('left') | 'right' | 'top' | 'bottom' | 'mirror',
+            'justify': Keyword('left') | 'right' | 'top' | 'bottom' | 'mirror',
             'hide': flag('hide')
         },
         'hide': flag('hide'),
@@ -476,7 +476,7 @@ class Module(AST):
         'version': integer,
         'locked': flag('locked'),
         'placed': flag('placed'),
-        'layer': Literal('F.Cu') | 'B.Cu',
+        'layer': text,
         'tedit': hex,
         'tstamp': hex,
         'at': number + number + Optional(number),

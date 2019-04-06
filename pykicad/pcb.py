@@ -281,12 +281,12 @@ class NetClass(AST):
         nets = self.init_list(nets, [])
 
         super(self.__class__, self).__init__(name=name, description=description,
-                                       clearance=clearance, trace_width=trace_width,
-                                       via_dia=via_dia, via_drill=via_drill,
-                                       uvia_dia=uvia_dia, uvia_drill=uvia_drill,
-                                       diff_pair_width=diff_pair_width,
-                                       diff_pair_gap=diff_pair_gap,
-                                       nets=nets)
+                                             clearance=clearance, trace_width=trace_width,
+                                             via_dia=via_dia, via_drill=via_drill,
+                                             uvia_dia=uvia_dia, uvia_drill=uvia_drill,
+                                             diff_pair_width=diff_pair_width,
+                                             diff_pair_gap=diff_pair_gap,
+                                             nets=nets)
 
 
 class Zone(AST):
@@ -308,12 +308,12 @@ class Zone(AST):
         },
         'priority': number,
         'connect_pads': {
-            '0': {
+            'clearance': number,
+            '1': {
                 '_attr': 'connect_pads',
                 '_tag': False,
                 '_parser': Literal('yes') | 'no' | 'thru_hole_only'
-            },
-            'clearance': number
+            }
         },
         'min_thickness': number,
         'fill': {
@@ -443,7 +443,10 @@ class PcbPlotParams(AST):
     schema = {
                 'layerselection': text,
                 'usegerberextensions': boolean('usegerberextensions'),
+                'usegerberattributes': boolean('usegerberattributes'),
+                'usegerberadvancedattributes': boolean('usegerberadvancedattributes'),
                 'excludeedgelayer': boolean('excludeedgelayer'),
+                'creategerberjobfile': boolean('creategerberjobfile'),
                 'linewidth': number,
                 'plotframeref': boolean('plotframeref'),
                 'viasonmask': boolean('viasonmask'),
@@ -469,7 +472,10 @@ class PcbPlotParams(AST):
     def __init__(self,
                  layerselection=None,
                  usegerberextensions=None,
+                 usegerberattributes=None,
+                 usegerberadvancedattributes=None,
                  excludeedgelayer=None,
+                 creategerberjobfile=None,
                  linewidth=None,
                  plotframeref=None,
                  viasonmask=None,
@@ -494,6 +500,8 @@ class PcbPlotParams(AST):
 
                     super(PcbPlotParams, self).__init__(layerselection=layerselection,
                                                         usegerberextensions=usegerberextensions,
+                                                        usegerberattributes=usegerberattributes,
+                                                        usegerberadvancedattributes=usegerberadvancedattributes,
                                                         excludeedgelayer=excludeedgelayer,
                                                         linewidth=linewidth,
                                                         plotframeref=plotframeref,
@@ -804,18 +812,18 @@ class Pcb(AST):
         dimensions = self.init_list(dimensions, [])
 
         super(self.__class__, self).__init__(version=version, host=host,
-                                  board_thickness=board_thickness,
-                                  num_nets=num_nets, num_no_connects=num_no_connects,
-                                  title=title, date=date, rev=rev, company=company,
-                                  comment1=comment1, comment2=comment2,
-                                  comment3=comment3, comment4=comment4,
-                                  page_type=page_type, portrait=portrait,
-                                  setup=setup, layers=layers, nets=nets,
-                                  net_classes=net_classes, modules=modules,
-                                  segments=segments, vias=vias, texts=texts,
-                                  lines=lines, arcs=arcs, circles=circles,
-                                  polygons=polygons, curves=curves, zones=zones,
-                                  targets=targets, dimensions=dimensions)
+                                             board_thickness=board_thickness,
+                                             num_nets=num_nets, num_no_connects=num_no_connects,
+                                             title=title, date=date, rev=rev, company=company,
+                                             comment1=comment1, comment2=comment2,
+                                             comment3=comment3, comment4=comment4,
+                                             page_type=page_type, portrait=portrait,
+                                             setup=setup, layers=layers, nets=nets,
+                                             net_classes=net_classes, modules=modules,
+                                             segments=segments, vias=vias, texts=texts,
+                                             lines=lines, arcs=arcs, circles=circles,
+                                             polygons=polygons, curves=curves, zones=zones,
+                                             targets=targets, dimensions=dimensions)
 
     def geometry(self):
         for element_list in [self.lines, self.circles, self.arcs,

@@ -1,8 +1,14 @@
 from pyparsing import *
 from functools import reduce
 
+import pyparsing
+pyparsing.ParserElement.enablePackrat()
+
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
-number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
+# text = pyparsing.quotedString.addParseAction(pyparsing.removeQuotes)
+# number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
+# number = pp.Regex(r"\d+\.\d+([Ee][+-]?\d+)?")
+number = pyparsing.pyparsing_common.number
 integer = Word(nums)
 hex = Word(hexnums)
 
@@ -14,7 +20,7 @@ def boolean_schema(attr, true, false):
     return {
         '0': {
             '_attr': attr,
-            '_parser': (Literal(true) | false)
+            '_parser': (Keyword(true) | false)
             .setParseAction(lambda toks: True if toks[0] == true else False),
             '_printer': lambda b: true if b else false
         }
@@ -48,7 +54,7 @@ except NameError:
 
 def flag(name):
     return {
-        '_parser': Literal(name).setParseAction(lambda x: True),
+        '_parser': Keyword(name).setParseAction(lambda x: True),
         '_printer': lambda flag: name if flag else '',
         '_tag': False,
         '_attr': name
@@ -411,34 +417,23 @@ class AST(object):
         return generate_parser(cls.tag, cls.schema)
 
     @classmethod
-    def parse_as_string(cls, string):
-        '''Parses str and returns dict with class arguments'''
+    def parse(cls, string):
+        '''Parses str and returns instance of class passed into func'''
         if not hasattr(cls, '_parser'):
             cls._parser = cls.parser()
-        return cls._parser.parseString(string)
-
-    @classmethod
-    def parse_as_dict(cls, string):
-        '''Parses str and returns dict with class arguments'''
-        parse_result = cls.parse_as_string(string)
-        # print(type(parse_result))
+        parse_result = cls._parser.parseString(string)
         result = {}
         for res in parse_result:
             if len(list(res.keys())) < 1:
                 continue
             key = next(iter(res.keys()))
-            if key not in result:
+            if not key in result:
                 result.update(res)
             else:
                 if not isinstance(result[key], list):
                     result[key] = [result[key]]
                 result[key].append(res[key])
-        return result
-
-    @classmethod
-    def parse(cls, string):
-        '''Parses str and returns instance of class passed into func'''
-        return cls(**cls.parse_as_dict(string))
+        return cls(**result)
 
     @classmethod
     def from_schema(cls, tag, schema):
