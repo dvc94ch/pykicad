@@ -847,6 +847,20 @@ class Pcb(AST):
             if module.name == name:
                 return module
 
+    def segmentConnected(self, position, tolerance=2):
+        """Returns whether a segment is connected to a position."""
+        import numpy as np
+
+        def dist(point_1, point_2):
+            return np.sqrt(abs(point_1[0] - point_2[0]) ** 2 + abs(point_1[1] - point_2[1]) ** 2)
+
+        for segment in self.segments:
+            if dist(position, segment.start) < tolerance:
+                return True
+            elif dist(position, segment.end) < tolerance:
+                return True
+        return False
+
     def extent(self, padding=5):
         min_pos = 1e8, 1e8
         max_pos = -1e8, -1e8
