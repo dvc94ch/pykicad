@@ -380,12 +380,17 @@ class Polygon(AST):
 
     def __init__(self, pts, layer='F.SilkS', width=None, tstamp=None, status=None):
         super(self.__class__, self).__init__(pts=pts, layer=layer, width=width,
-                                      tstamp=tstamp, status=status)
+                                             tstamp=tstamp, status=status)
 
     def flip(self):
         '''Flip polygon.'''
         self.layer = flip_layer(self.layer)
-        raise NotImplementedError()
+        for index, point in enumerate(self.pts):
+            _point = list(point)
+            # _point[0] = point[0] * -1
+            _point[1] = point[1] * -1
+            self.pts[index] = _point
+        # raise NotImplementedError()
 
 
 class Curve(AST):
