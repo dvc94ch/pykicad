@@ -74,6 +74,8 @@ def flip_layer(layer):
         side, layer = layer.split('.')
         side = 'B' if side == 'F' else 'B'
         return side + '.' + layer
+    print("Warning: Unable to determine side of layer: "+str(layer))
+    return layer
 
 
 ###########################
@@ -359,7 +361,9 @@ class Arc(AST):
     def flip(self):
         '''Flip an arc.'''
         self.layer = flip_layer(self.layer)
-        raise NotImplementedError()
+
+        self.start[1] = -self.start[1];
+        self.end[1] = -self.end[1];
 
 
 class Polygon(AST):
