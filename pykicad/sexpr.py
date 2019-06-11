@@ -304,7 +304,7 @@ def tree_to_string(tree, level=0):
     if isinstance(tree, AST):
         return tree.to_string()
 
-    assert isinstance(tree, dict)
+    assert isinstance(tree, dict), str(dict)
 
     keys = [key for key in tree.keys() if key.isdigit()]
     keys.sort()
