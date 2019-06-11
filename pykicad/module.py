@@ -18,14 +18,25 @@ def find_library(library):
     '''Returns full path of specified library'''
     for path in os.environ.get(MODULE_SEARCH_PATH).split(os.pathsep):
 
-        full_path = os.path.join(path, library + '.pretty')
+        # Generate full path
+        full_path = os.path.join(path, library)
+
+        # Support _pretty folder names
+        if 'pretty' not in full_path:
+            full_path = full_path + '.pretty'
+
         if os.path.isdir(full_path):
             return full_path
 
 
 def find_module(library, module):
     '''Returns full path of specified module'''
-    full_name = os.path.join(library + '.pretty', module + '.kicad_mod')
+
+    # Support _pretty folder names
+    if 'pretty' not in library:
+        library = library + '.pretty'
+
+    full_name = os.path.join(library, module + '.kicad_mod')
     for path in os.environ.get(MODULE_SEARCH_PATH).split(os.pathsep):
         full_path = os.path.join(path, full_name)
         if os.path.isfile(full_path):
@@ -39,6 +50,8 @@ def list_libraries():
         for lib in os.listdir(path):
             if lib.endswith('.pretty'):
                 libraries.append('.'.join(lib.split('.')[0:-1]))
+            elif lib.endswith('_pretty'):
+                libraries.append('_'.join(lib.split('_')[0:-1]))
     return libraries
 
 
@@ -445,10 +458,18 @@ class Model(AST):
             '_parser': text,
             '_attr': 'path'
         },
+        'offset': {
+            'xyz': {
+                '_parser': tuple_parser(3),
+                '_attr': 'offset',
+                '_optional': True
+            }
+        },
         'at': {
             'xyz': {
                 '_parser': tuple_parser(3),
-                '_attr': 'at'
+                '_attr': 'offset',
+                '_optional': True
             }
         },
         'scale': {
@@ -465,9 +486,9 @@ class Model(AST):
         }
     }
 
-    def __init__(self, path, at, scale, rotate):
+    def __init__(self, path, offset, scale, rotate):
         super(self.__class__, self).__init__(
-            path=path, at=at, scale=scale, rotate=rotate)
+            path=path, offset=offset, scale=scale, rotate=rotate)
 
 
 class Module(AST):
