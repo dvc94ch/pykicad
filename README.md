@@ -188,7 +188,7 @@ pcb.to_file('project')
 * MODULE_SEARCH_PATH
 
 # Project using pykicad
-* [pycircuit] (https://github.com/dvc94ch/pycircuit)
+* [pycircuit](https://github.com/dvc94ch/pycircuit)
 
 # License
 ISC License
