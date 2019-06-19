@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/dvc94ch/pykicad.svg?branch=master)](https://travis-ci.org/dvc94ch/pykicad)
+[![PyPI](https://img.shields.io/pypi/v/pykicad.svg)](https://pypi.python.org/pypi/pykicad)
 
 # Routines for generating and parsing KiCAD files
 
