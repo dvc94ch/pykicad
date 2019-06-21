@@ -12,5 +12,6 @@ setup(
     keywords=['kicad', 'file formats', 'parser'],
     install_requires=['pyparsing'],
     tests_require=['pytest'],
+    package_data={'': ['*.kicad_mod']},
     license='ISC'
 )
