@@ -465,14 +465,12 @@ class Model(AST):
             'xyz': {
                 '_parser': tuple_parser(3),
                 '_attr': 'offset',
-                '_optional': True
             }
         },
         'at': {
             'xyz': {
                 '_parser': tuple_parser(3),
-                '_attr': 'offset',
-                '_optional': True
+                '_attr': 'at',
             }
         },
         'scale': {
@@ -489,9 +487,9 @@ class Model(AST):
         }
     }
 
-    def __init__(self, path, offset, scale, rotate):
+    def __init__(self, path, scale, rotate, offset=(0., 0., 0.), at=(0., 0., 0.)):
         super(self.__class__, self).__init__(
-            path=path, offset=offset, scale=scale, rotate=rotate)
+            path=path, at=at, offset=offset, scale=scale, rotate=rotate)
 
 
 class Module(AST):

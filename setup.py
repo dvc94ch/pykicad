@@ -14,6 +14,7 @@ setup(
     keywords=['kicad', 'file formats', 'parser'],
     install_requires=['pyparsing'],
     tests_require=['pytest'],
+    package_data={'': ['*.kicad_mod']},
     python_requires='>=3',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
