@@ -5,7 +5,7 @@ import sys
 from io import open
 from pykicad.sexpr import *
 
-MODULE_SEARCH_PATH = "PYKICAD_MOD_PATH"
+MODULE_SEARCH_PATH = "KISYSMOD"
 
 ###########################
 # Utility methods         #
