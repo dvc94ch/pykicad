@@ -15,6 +15,7 @@
   (via_min_size 0.7)
   (via_min_drill 0.35)
   (user_via 0.7 0.35)
+  (user_via 0.8 0.36)
   (blind_buried_vias_allowed yes)
   (uvia_size 0.7)
   (uvia_drill 0.35)
