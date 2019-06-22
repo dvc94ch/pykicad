@@ -903,4 +903,38 @@ class Pcb(AST):
 
     @classmethod
     def from_file(cls, path):
-        return Pcb.parse(open(path, encoding='utf-8').read())
+        # Load lines from file
+        line_list = open(path, encoding='utf-8').readlines()
+
+        # Only take first user trace width and warn user
+        # TODO: Support multiple user trace widths
+        user_trace_width_lines = []
+        user_via_lines = []
+        filtered_line_list = []
+        for index, line in enumerate(line_list):
+            if 'user_trace_width' in line:
+                user_trace_width_lines += [index]
+                if len(user_trace_width_lines) == 1:
+                    filtered_line_list += [line]
+            elif 'user_via' in line:
+                user_via_lines += [index]
+                if len(user_via_lines) == 1:
+                    filtered_line_list += [line]
+            else:
+                filtered_line_list += [line]
+
+        # Warn user that we've ignored key with multiple values
+        if len(user_trace_width_lines) > 1:
+            print('Ignoring user trace widths for compatability: %s' % str([line_list[index] for index in user_trace_width_lines[1:]]))
+
+        # Warn user that we've ignored key with multiple values
+        if len(user_via_lines) > 1:
+            print('Ignoring user via shapes for compatability: %s' % str([line_list[index] for index in user_via_lines[1:]]))
+
+        # Combine back into lines
+        lines = ''
+        for line in filtered_line_list:
+            lines += line
+
+        # Parse filtered list
+        return Pcb.parse(lines)
