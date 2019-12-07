@@ -1,4 +1,5 @@
 import unittest
+from os import path as osp
 from pytest import *
 from pykicad.pcb import *
 
@@ -38,7 +39,8 @@ class ZoneTests(unittest.TestCase):
 
 class PcbTests(unittest.TestCase):
     def test_minimal_pcb(self):
-        pcb = Pcb().from_file('./minimal_pcb.kicad_pcb')
+        directory = osp.dirname(osp.abspath(__file__))
+        pcb = Pcb().from_file(osp.join(directory, 'minimal_pcb.kicad_pcb'))
         assert pcb.version == 123
         assert pcb.host == ['pcbnew', 'version']
         assert len(pcb.nets) == 4
