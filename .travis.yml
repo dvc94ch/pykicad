@@ -3,6 +3,8 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
 
 # command to install dependencies
 install:
@@ -14,3 +16,23 @@ script:
   - pipenv run pytest
   - pipenv run autopep8 --in-place ./**/*.py
   - git diff --quiet
+  - python setup.py sdist bdist_wheel
+
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  # Leave the use as __token__
+  user: __token__
+  password:
+    # You will need to generate and create this secure tag yourself
+    # https://docs.travis-ci.com/user/deployment/pypi/
+    # 1. Get the API token https://pypi.org/help/#apitoken
+    # 2. Install travis locally: https://github.com/travis-ci/travis.rb#installation
+    #    (I don't think you need to pin the versions so hard)
+    # 3. Encrypt the key
+    #        travis encrypt your-api-token --add deploy.password
+    secure: "The encrypted key from above. I think it will automatically be written"
+  on:
+    tags: true
+    repo: dvc94ch/pykicad
+    python: 3.7
