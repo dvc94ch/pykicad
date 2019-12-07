@@ -785,7 +785,7 @@ class Pcb(AST):
 
     def __init__(self, version=1, host=['pykicad', 'x.x.x'],
                  board_thickness=None, board_area=None,
-                 num_nets=None, num_no_connects=None, num_tracks=None,
+                 num_nets=0, num_no_connects=None, num_tracks=None,
                  num_zones=None, num_modules=None, num_drawings=None,
                  num_links=None, title=None, date=None, rev=None, company=None,
                  comment1=None, comment2=None, comment3=None, comment4=None,
@@ -847,6 +847,20 @@ class Pcb(AST):
             if module.name == name:
                 return module
 
+    def segmentConnected(self, position, tolerance=2):
+        """Returns whether a segment is connected to a position."""
+        import numpy as np
+
+        def dist(point_1, point_2):
+            return np.sqrt(abs(point_1[0] - point_2[0]) ** 2 + abs(point_1[1] - point_2[1]) ** 2)
+
+        for segment in self.segments:
+            if dist(position, segment.start) < tolerance:
+                return True
+            elif dist(position, segment.end) < tolerance:
+                return True
+        return False
+
     def extent(self, padding=5):
         min_pos = 1e8, 1e8
         max_pos = -1e8, -1e8
@@ -889,4 +903,38 @@ class Pcb(AST):
 
     @classmethod
     def from_file(cls, path):
-        return Pcb.parse(open(path, encoding='utf-8').read())
+        # Load lines from file
+        line_list = open(path, encoding='utf-8').readlines()
+
+        # Only take first user trace width and warn user
+        # TODO: Support multiple user trace widths
+        user_trace_width_lines = []
+        user_via_lines = []
+        filtered_line_list = []
+        for index, line in enumerate(line_list):
+            if 'user_trace_width' in line:
+                user_trace_width_lines += [index]
+                if len(user_trace_width_lines) == 1:
+                    filtered_line_list += [line]
+            elif 'user_via' in line:
+                user_via_lines += [index]
+                if len(user_via_lines) == 1:
+                    filtered_line_list += [line]
+            else:
+                filtered_line_list += [line]
+
+        # Warn user that we've ignored key with multiple values
+        if len(user_trace_width_lines) > 1:
+            print('Ignoring user trace widths for compatability: %s' % str([line_list[index] for index in user_trace_width_lines[1:]]))
+
+        # Warn user that we've ignored key with multiple values
+        if len(user_via_lines) > 1:
+            print('Ignoring user via shapes for compatability: %s' % str([line_list[index] for index in user_via_lines[1:]]))
+
+        # Combine back into lines
+        lines = ''
+        for line in filtered_line_list:
+            lines += line
+
+        # Parse filtered list
+        return Pcb.parse(lines)
