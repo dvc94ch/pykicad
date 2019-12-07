@@ -1,2 +1,4 @@
 include README.md
 include LICENSE
+include versioneer.py
+include pykicad/_version.py
