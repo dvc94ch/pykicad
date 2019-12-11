@@ -1,30 +1,26 @@
 from pyparsing import *
 from functools import reduce
 
-import pyparsing
-pyparsing.ParserElement.enablePackrat()
+import pyparsing as pp
+pp.ParserElement.enablePackrat()
 
 text = dblQuotedString | Word(printables + alphas8bit, excludeChars=')')
-# text = pyparsing.quotedString.addParseAction(pyparsing.removeQuotes)
-# number = Combine(Optional('-') + Word(nums) + Optional(Word('.') + Word(nums)))
-# number = pp.Regex(r"\d+\.\d+([Ee][+-]?\d+)?")
-number = pyparsing.pyparsing_common.number
-integer = Word(nums)
-hex = Word(hexnums)
-
 dblQuotedString.setParseAction(removeQuotes)
-number.setParseAction(lambda tokens: float(tokens[0]))
-integer.setParseAction(lambda tokens: int(tokens[0]))
+number = pp.pyparsing_common.fnumber
+integer = pp.pyparsing_common.integer
+hex = pp.pyparsing_common.hex_integer
+
 
 def boolean_schema(attr, true, false):
     return {
         '0': {
             '_attr': attr,
-            '_parser': (Keyword(true) | false)
+            '_parser': pp.Regex('(?i)(%s|%s)' % (true, false))#(pp.Keyword(true) | false)
             .setParseAction(lambda toks: True if toks[0] == true else False),
             '_printer': lambda b: true if b else false
         }
     }
+
 
 def boolean(attr):
     return boolean_schema(attr, 'true', 'false')
@@ -308,7 +304,7 @@ def tree_to_string(tree, level=0):
     if isinstance(tree, AST):
         return tree.to_string()
 
-    assert isinstance(tree, dict)
+    assert isinstance(tree, dict), str(dict)
 
     keys = [key for key in tree.keys() if key.isdigit()]
     keys.sort()
@@ -417,23 +413,34 @@ class AST(object):
         return generate_parser(cls.tag, cls.schema)
 
     @classmethod
-    def parse(cls, string):
-        '''Parses str and returns instance of class passed into func'''
+    def parse_as_string(cls, string):
+        '''Parses str and returns dict with class arguments'''
         if not hasattr(cls, '_parser'):
             cls._parser = cls.parser()
-        parse_result = cls._parser.parseString(string)
+        return cls._parser.parseString(string)
+
+    @classmethod
+    def parse_as_dict(cls, string):
+        '''Parses str and returns dict with class arguments'''
+        parse_result = cls.parse_as_string(string)
+        # print(type(parse_result))
         result = {}
         for res in parse_result:
             if len(list(res.keys())) < 1:
                 continue
             key = next(iter(res.keys()))
-            if not key in result:
+            if key not in result:
                 result.update(res)
             else:
                 if not isinstance(result[key], list):
                     result[key] = [result[key]]
                 result[key].append(res[key])
-        return cls(**result)
+        return result
+
+    @classmethod
+    def parse(cls, string):
+        '''Parses str and returns instance of class passed into func'''
+        return cls(**cls.parse_as_dict(string))
 
     @classmethod
     def from_schema(cls, tag, schema):
