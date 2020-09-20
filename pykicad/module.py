@@ -450,6 +450,12 @@ class Model(AST):
                 '_attr': 'at'
             }
         },
+        'offset': {
+            'xyz': {
+                '_parser': tuple_parser(3),
+                '_attr': 'at'
+            }
+        },
         'scale': {
             'xyz': {
                 '_parser': tuple_parser(3),
