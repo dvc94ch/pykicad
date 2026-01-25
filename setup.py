@@ -1,13 +1,18 @@
 from setuptools import setup, find_packages
 import versioneer
 
+
+with open('README.md') as file:
+    readme = file.read()
+
+
 setup(
     name='pykicad',
     packages=find_packages(),
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description='Library for working with KiCAD file formats',
-    long_description=open('README.md').read(),
+    long_description=readme,
     author='David Craven',
     author_email='david@craven.ch',
     url='https://github.com/dvc94ch/pykicad',

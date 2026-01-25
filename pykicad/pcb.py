@@ -889,4 +889,5 @@ class Pcb(AST):
 
     @classmethod
     def from_file(cls, path):
-        return Pcb.parse(open(path, encoding='utf-8').read())
+        with open(path, encoding='utf-8') as file:
+            return Pcb.parse(file.read())

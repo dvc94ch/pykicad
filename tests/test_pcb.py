@@ -38,7 +38,8 @@ class ZoneTests(unittest.TestCase):
 
 class PcbTests(unittest.TestCase):
     def test_minimal_pcb(self):
-        pcb_string = open('tests/minimal_pcb.kicad_pcb', 'r').read()
+        with open('tests/minimal_pcb.kicad_pcb', 'r') as file:
+            pcb_string = file.read()
         pcb = Pcb.parse(pcb_string)
         assert pcb.version == 123
         assert pcb.host == ['pcbnew', 'version']
