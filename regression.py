@@ -23,7 +23,8 @@ Module.to_string = randomize_attribute_order
 
 
 def test_parse_module(module_path):
-    module_text = open(module_path, 'r', encoding='utf-8').read()
+    with open(module_path, 'r', encoding='utf-8') as file:
+        module_text = file.read()
 
     try:
         module = Module.parse(module_text)

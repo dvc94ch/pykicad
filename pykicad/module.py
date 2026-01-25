@@ -540,7 +540,8 @@ class Module(AST):
 
         # Load module if it's not cached
         if path not in cls.cached_modules:
-            module = open(path, 'r', encoding='utf-8').read()
+            with open(path, 'r', encoding='utf-8') as file:
+                module = file.read()
             module = cls.parse(module)
             cls.cached_modules[path] = copy.deepcopy(module)
         else:
