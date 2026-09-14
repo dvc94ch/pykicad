@@ -140,7 +140,7 @@ def generate_parser(tag, schema, attr=None, optional=False):
         return parser
 
     # Case 2: schema is a subclass of AST
-    if type(schema) == type and issubclass(schema, AST):
+    if isinstance(schema, type) and issubclass(schema, AST):
 
         if attr is None:
             attr = tag
@@ -222,7 +222,7 @@ def find_attr(attr, value, schema):
             return (lambda value: ' '.join(map(printer, value))
                     if isinstance(value, list) else printer(value))
 
-        if type(schema) == type:
+        if isinstance(schema, type):
             return schema.to_string
 
         if not isinstance(schema, dict):
@@ -230,7 +230,7 @@ def find_attr(attr, value, schema):
 
         printer = False
         parser = schema.get('_parser', False)
-        if type(parser) == type and issubclass(parser, AST):
+        if isinstance(parser, type) and issubclass(parser, AST):
             printer = parser.to_string
 
         printer = schema.get('_printer', printer)
